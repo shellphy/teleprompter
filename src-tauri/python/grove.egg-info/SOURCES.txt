@@ -5,3 +5,5 @@ python/grove.egg-info/dependency_links.txt
 python/grove.egg-info/entry_points.txt
 python/grove.egg-info/requires.txt
 python/grove.egg-info/top_level.txt
+python/tauri_app/__init__.py
+python/tauri_app/__main__.py
