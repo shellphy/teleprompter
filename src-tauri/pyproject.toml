@@ -3,13 +3,18 @@ name = "grove"
 version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.13"
-dependencies = ["pytauri == 0.5.*", "pydantic == 2.*", "anyio == 4.*"]  
+dependencies = [
+    "pytauri == 0.5.*",
+    "pydantic == 2.*",
+    "anyio == 4.*",
+    "tortoise-orm>=0.25.1",
+]  
 
 [project.entry-points.pytauri]
 ext_mod = "tauri_app.ext_mod"
 
 [build-system]
-requires = ["setuptools>=61", "Cython>=3"]
+requires = ["setuptools>=61", "Cython>=3", "setuptools-rust"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages]
