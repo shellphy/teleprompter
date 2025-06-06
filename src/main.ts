@@ -7,7 +7,7 @@ createApp(App).mount("#app");
 
 interface Greeting {
     message: string;
-  }
+}
 
 async function greet() {
     const rsGreeting = await invoke<string>("greet", {

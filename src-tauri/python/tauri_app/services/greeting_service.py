@@ -1,5 +1,5 @@
 import sys
-from ..models import Person, Greeting
+from ..dtos import Person, Greeting
 
 
 class GreetingService:

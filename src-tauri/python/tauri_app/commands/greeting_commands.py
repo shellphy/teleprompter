@@ -1,5 +1,5 @@
 from pytauri import Commands
-from ..models import Person, Greeting
+from ..dtos import Person, Greeting
 from ..services import GreetingService
 
 
