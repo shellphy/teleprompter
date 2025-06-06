@@ -18,6 +18,7 @@
 8. 运行项目：
    ```powershell
    pnpm install
+   uv pip install -e src-tauri
    pnpm tauri dev
    ```
 
@@ -37,6 +38,7 @@
 8. 运行项目：
    ```shell
    pnpm install
+   uv pip install -e src-tauri
    pnpm tauri dev
    ```
 
