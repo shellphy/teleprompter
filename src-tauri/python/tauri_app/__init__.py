@@ -1,5 +1,4 @@
 import sys
-
 from anyio.from_thread import start_blocking_portal
 from pydantic import BaseModel
 from pytauri import (
@@ -11,10 +10,8 @@ from pytauri import (
 
 commands: Commands = Commands()
 
-
 class Person(BaseModel):
     name: str
-
 
 class Greeting(BaseModel):
     message: str
@@ -30,9 +27,7 @@ def main() -> int:
         app = builder_factory().build(
             BuilderArgs(
                 context=context_factory(),
-                # 👇
                 invoke_handler=commands.generate_handler(portal),
-                # 👆
             )
         )
         exit_code = app.run_return()
