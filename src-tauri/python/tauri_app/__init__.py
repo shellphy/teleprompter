@@ -1,3 +1,4 @@
+import asyncio
 from anyio.from_thread import start_blocking_portal
 from pytauri import (
     BuilderArgs,
@@ -14,11 +15,6 @@ commands: Commands = Commands()
 
 # 注册所有命令
 register_all_commands(commands)
-
-async def test_db():
-    print("test_db")
-    user = User(name="test")
-    await user.save()
 
 def main() -> int:
     """应用程序主入口"""
@@ -40,9 +36,7 @@ def main() -> int:
         
         # 执行启动任务
         portal.call(lifecycle_manager.run_startup_tasks, app.handle())
-        
-        portal.call(test_db)
-        
+         
         # 运行应用程序
         exit_code = app.run_return()
 
