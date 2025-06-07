@@ -2,13 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{convert::Infallible, env::var, error::Error, path::PathBuf};
-
 use pyo3::wrap_pymodule;
 use pytauri::standalone::{
     dunce::simplified, PythonInterpreterBuilder, PythonInterpreterEnv, PythonScript,
 };
 use tauri::utils::platform::resource_dir;
-
 use grove_lib::{ext_mod, tauri_generate_context};
 
 fn main() -> Result<Infallible, Box<dyn Error>> {
@@ -36,7 +34,7 @@ fn main() -> Result<Infallible, Box<dyn Error>> {
         // 👉 When bundled as a standalone App, we will put python in the resource directory
         PythonInterpreterEnv::Standalone(resource_dir.into())
     };
-
+    
     // 👉 Equivalent to `python -m tauri_app`,
     // i.e, run the `src-tauri/python/tauri_app/__main__.py`
     let py_script = PythonScript::Module("tauri_app".into());

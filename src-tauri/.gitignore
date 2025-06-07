@@ -15,3 +15,4 @@ pyembed/
 *.egg-info/
 *.c
 ext_mod*
+*.sqlite*
