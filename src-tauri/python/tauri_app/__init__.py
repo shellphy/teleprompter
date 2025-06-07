@@ -7,12 +7,18 @@ from pytauri import (
 )
 from .commands import register_all_commands
 from .lifecycle import LifecycleManager
+from .entities.grove import User
 
 # 创建命令实例
 commands: Commands = Commands()
 
 # 注册所有命令
 register_all_commands(commands)
+
+async def test_db():
+    print("test_db")
+    user = User(name="test")
+    await user.save()
 
 def main() -> int:
     """应用程序主入口"""
@@ -35,11 +41,12 @@ def main() -> int:
         # 执行启动任务
         portal.call(lifecycle_manager.run_startup_tasks, app.handle())
         
+        portal.call(test_db)
+        
         # 运行应用程序
         exit_code = app.run_return()
 
-        # 执行关闭任务
-        print("正在执行关闭任务...")
+        # 清理数据库连接
         portal.call(lifecycle_manager.run_shutdown_tasks)
 
         return exit_code
