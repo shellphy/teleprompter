@@ -8,7 +8,6 @@ from pytauri import (
 )
 from .commands import register_all_commands
 from .lifecycle import LifecycleManager
-from .entities.grove import User
 
 # 创建命令实例
 commands: Commands = Commands()
