@@ -50,7 +50,7 @@ const activeMenu = computed(() => route.path)
         </ElMenuItem>
         <ElMenuItem index="/models" route="/models">
           <ElIcon><IconMonitor /></ElIcon>
-          <span>智能引擎</span>
+          <span>大模型</span>
         </ElMenuItem>
       </ElMenu>
     </ElAside>

@@ -37,25 +37,6 @@ wheels = [
 ]
 
 [[package]]
-name = "grove"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "anyio" },
-    { name = "pydantic" },
-    { name = "pytauri" },
-    { name = "tortoise-orm" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "anyio", specifier = "==4.*" },
-    { name = "pydantic", specifier = "==2.*" },
-    { name = "pytauri", specifier = "==0.5.*" },
-    { name = "tortoise-orm", specifier = ">=0.25.1" },
-]
-
-[[package]]
 name = "idna"
 version = "3.10"
 source = { registry = "https://pypi.org/simple" }
@@ -169,7 +150,7 @@ wheels = [
 
 [[package]]
 name = "pytauri"
-version = "0.5.0"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -178,9 +159,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5d/cc/c0c250af45f3f7bf822d274349e2c547b61398d0e903234d9ce897d37371/pytauri-0.5.0.tar.gz", hash = "sha256:125d56ea19349971cb2bc935d29281075d6d13cda1dc482ca5c2d3b558bdf754", size = 20423 }
+sdist = { url = "https://files.pythonhosted.org/packages/ee/9c/3e990048175caa605a7bd36cbb6cb1115f684f9f0127ed21da9a2fe774ac/pytauri-0.6.0.tar.gz", hash = "sha256:38a43be0c2a010cf29943902f8feec6866c19c51b9bae573d35e5b7141d2d50a", size = 24653 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/bd/09fcee6e25d9663706467faae294d7fb9e8fdc19abbaafd01db7e1e5a742/pytauri-0.5.0-py3-none-any.whl", hash = "sha256:d890ca50fefff55cfb7cc67e0f55a5a15e0b72f7a81ddad274c8bc1227c4ad30", size = 25577 },
+    { url = "https://files.pythonhosted.org/packages/fb/2b/683b45203cd6a5a23e44736b100781a7b09d95835b8bd9573a98ee209a65/pytauri-0.6.0-py3-none-any.whl", hash = "sha256:243a64acd1f7ed35d2be848f3974e871e24496498aaaa4e5eb4bda6111efa939", size = 31796 },
 ]
 
 [[package]]
@@ -199,6 +180,25 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a2/87/a6771e1546d97e7e041b6ae58d80074f81b7d5121207425c964ddf5cfdbd/sniffio-1.3.1.tar.gz", hash = "sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc", size = 20372 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e9/44/75a9c9421471a6c4805dbf2356f7c181a29c1879239abab1ea2cc8f38b40/sniffio-1.3.1-py3-none-any.whl", hash = "sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2", size = 10235 },
+]
+
+[[package]]
+name = "teleprompter"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "anyio" },
+    { name = "pydantic" },
+    { name = "pytauri" },
+    { name = "tortoise-orm" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "anyio", specifier = "==4.*" },
+    { name = "pydantic", specifier = "==2.*" },
+    { name = "pytauri", specifier = "==0.6.*" },
+    { name = "tortoise-orm", specifier = ">=0.25.1" },
 ]
 
 [[package]]
