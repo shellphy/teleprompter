@@ -97,18 +97,12 @@
           </el-form-item>
         </el-form>
         
-        <div v-if="isTestingApiKey" class="testing-status">
-          <el-alert
-            title="正在测试API Key..."
-            type="info"
-            :closable="false"
-            show-icon
-          />
-        </div>
       </div>
       <template #footer>
         <el-button @click="showCloudConfigDialog = false">取消</el-button>
-        <el-button type="info" @click="testApiKey" :loading="isTestingApiKey">测试连接</el-button>
+        <el-button type="info" @click="testApiKey" :loading="isTestingApiKey">
+          {{ isTestingApiKey ? '测试中...' : '测试连接' }}
+        </el-button>
         <el-button type="primary" @click="saveCloudConfig" :loading="isSavingConfig">确定</el-button>
       </template>
     </el-dialog>
@@ -484,9 +478,7 @@ const selectVectorModelFile = () => {
   margin-bottom: 5px;
 }
 
-.testing-status {
-  margin-top: 15px;
-}
+
 
 /* 导入对话框样式 */
 .import-dialog-container {

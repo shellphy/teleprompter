@@ -1,35 +1,4 @@
 /**
- * API响应的基础接口
- */
-export interface BaseResponse {
-  success: boolean;
-  message?: string;
-}
-
-/**
- * 错误响应接口
- */
-export interface ErrorResponse {
-  success: false;
-  message: string;
-  code?: string;
-}
-
-/**
- * 成功响应接口
- */
-export interface SuccessResponse<T = any> {
-  success: true;
-  data?: T;
-  message?: string;
-}
-
-/**
- * 通用API响应类型
- */
-export type ApiResponse<T = any> = SuccessResponse<T> | ErrorResponse;
-
-/**
  * MiniMax相关的API类型
  */
 export namespace MiniMaxApi {
