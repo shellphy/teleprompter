@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 
-
 class Person(BaseModel):
     """人员信息模型"""
     name: str
