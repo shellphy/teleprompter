@@ -106,12 +106,17 @@
             <div class="card-header">
               <span>AI闲聊</span>
               <div class="header-controls">
-                <el-select v-model="chatTopicSource" style="width: 110px">
+                <el-select v-model="chatTopicSource" style="width: 110px" :disabled="chatMode">
                   <el-option label="平衡模式" value="balanced"></el-option>
                   <el-option label="偏重话题" value="topic"></el-option>
                   <el-option label="偏重产品" value="product"></el-option>
                 </el-select>
-                <el-switch v-model="chatMode" active-text="启用" inactive-text="关闭" inline-prompt active-color="#409EFF" />
+                <el-switch 
+                  v-model="chatMode" 
+                  active-text="启用" 
+                  inactive-text="关闭" 
+                  inline-prompt 
+                  active-color="#409EFF" />
                 <el-switch v-model="autoChatSpeak" active-text="自动播放" inactive-text="手动播放" inline-prompt active-color="#67C23A" class="ml-10" />
                 <el-button type="success" :disabled="!currentChat.content" class="ml-10">播放</el-button>
               </div>
@@ -200,8 +205,9 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, watch } from 'vue';
+import { ref, computed, nextTick, watch, onUnmounted } from 'vue';
 import { ElCard, ElInput, ElButton, ElTag, ElSwitch, ElScrollbar, ElMessage, ElSelect, ElOption } from 'element-plus';
+import { chatService } from '@/services';
 
 // 直播间连接状态
 const roomId = ref('');
@@ -241,30 +247,72 @@ const sampleMessages = [
 ];
 
 // AI闲聊
-const chatMode = ref(true);
+const chatMode = ref(false);
 const autoChatSpeak = ref(true);
 const chatTopicSource = ref('balanced');
-const currentChat = ref({
-  content: '欢迎来到今天的直播间，感谢大家的关注和支持！今天我们将为大家带来一系列精选护肤产品，特别适合夏季使用。看到这么多朋友已经进入直播间，非常开心！如果有任何问题，随时在评论区提出，我会尽快为大家解答。'
-});
 
-// 内容来源权重配置
-const contentSourceConfig = computed(() => {
-  switch(chatTopicSource.value) {
-    case 'topic':
-      return { topicWeight: 0.8, productWeight: 0.2 };
-    case 'product':
-      return { topicWeight: 0.2, productWeight: 0.8 };
-    case 'balanced':
-    default:
-      return { topicWeight: 0.5, productWeight: 0.5 };
-  }
+const currentChat = ref({
+  content: '点击"启用"开始AI闲聊，系统将根据直播间氛围自动生成互动内容...'
 });
 
 // 监听内容来源变化
 watch(chatTopicSource, (newValue) => {
-  console.log(`内容来源已变更为: ${newValue}，权重配置:`, contentSourceConfig.value);
-  // 这里可以添加更新AI闲聊内容的逻辑
+  console.log(`内容来源已变更为: ${newValue}`);
+  // 如果闲聊模式开启，重启聊天以应用新配置
+  if (chatMode.value) {
+    restartChatWithNewConfig();
+  }
+});
+
+// 监听聊天模式开关
+watch(chatMode, async (isEnabled) => {
+  if (isEnabled) {
+    await startAIChat();
+  } else {
+    await stopAIChat();
+  }
+});
+
+// 开始AI闲聊
+const startAIChat = async () => {
+  try {
+    await chatService.startChat(
+      chatTopicSource.value,
+      (message) => {
+        // 更新当前闲聊内容
+        currentChat.value.content = message;
+      }
+    );
+  } catch (error) {
+    console.error('启动AI闲聊失败:', error);
+    chatMode.value = false; // 失败时关闭开关
+  }
+};
+
+// 停止AI闲聊
+const stopAIChat = async () => {
+  try {
+    await chatService.stopChat();
+    currentChat.value.content = '点击"启用"开始AI闲聊，系统将根据直播间氛围自动生成互动内容...';
+  } catch (error) {
+    console.error('停止AI闲聊失败:', error);
+  }
+};
+
+// 重启聊天以应用新配置
+const restartChatWithNewConfig = async () => {
+  if (chatService.isRunning()) {
+    await stopAIChat();
+    // 稍微延迟后重新启动，确保之前的聊天完全停止
+    setTimeout(() => {
+      startAIChat();
+    }, 100);
+  }
+};
+
+// 组件卸载时停止聊天
+onUnmounted(() => {
+  stopAIChat();
 });
 
 // 提词生成
