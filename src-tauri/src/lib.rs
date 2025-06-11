@@ -45,6 +45,7 @@ pub mod ext_mod {
             |_args, _kwargs| Ok(tauri_generate_context()),
             |_args, _kwargs| {
                 let builder = tauri::Builder::default()
+                    .plugin(tauri_plugin_http::init())
                     .plugin(tauri_plugin_opener::init())
                     .setup(|app| {
                         initialize_database(app.handle())?;
