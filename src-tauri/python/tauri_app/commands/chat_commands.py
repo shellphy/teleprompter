@@ -8,11 +8,17 @@ from pytauri import Commands
 from pydantic import BaseModel
 from ..entities.setting import Setting
 from ..services import minimax_service
+from enum import Enum
 
 Msg = RootModel[str]
 
+class ChatType(str, Enum):
+    balanced = "balanced"
+    topic = "topic"
+    product = "product"
+
 class CommonChatBody(BaseModel):
-    type: int
+    type: ChatType
     channel: JavaScriptChannelId[Msg]
 
 # 默认提示词
@@ -43,11 +49,12 @@ def register_chat_commands(commands: Commands) -> None:
 
         channel: Channel[Msg] = body.channel.channel_on(webview_window.as_ref_webview())
         prompt = DEFAULT_PROMPT
-        if body.type == 1:
+        print(body.type)
+        if body.type == ChatType.balanced:
             prompt = DEFAULT_PROMPT
-        elif body.type == 2:
+        elif body.type == ChatType.topic:
             prompt = TOPIC_PROMPT
-        elif body.type == 3:
+        elif body.type == ChatType.product:
             prompt = PRODUCT_PROMPT
         await minimax_service.getResponse(prompt, 50, lambda message: handle_message(message, channel))
         return b"null"

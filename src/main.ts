@@ -16,7 +16,7 @@ async function commonChat() {
     channel.addJsonListener((msg) => console.log(msg))
     await pyInvoke("commonChat", {
         channel: channel,
-        type: 1
+        type: "balanced"
     });
 }
 
