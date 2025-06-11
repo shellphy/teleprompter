@@ -15,6 +15,9 @@
       <div class="welcome-card">
         <h2>欢迎使用AI直播助手</h2>
         <p>请使用右上角的按钮来配置您的AI模型。您可以选择云端模型或导入本地模型来开始使用。</p>
+        <div v-if="cloudConfig.apiKey" class="status-info">
+          <el-tag type="success">MiniMax API 已配置</el-tag>
+        </div>
       </div>
     </div>
 
@@ -93,10 +96,20 @@
             />
           </el-form-item>
         </el-form>
+        
+        <div v-if="isTestingApiKey" class="testing-status">
+          <el-alert
+            title="正在测试API Key..."
+            type="info"
+            :closable="false"
+            show-icon
+          />
+        </div>
       </div>
       <template #footer>
         <el-button @click="showCloudConfigDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveCloudConfig">确定</el-button>
+        <el-button type="info" @click="testApiKey" :loading="isTestingApiKey">测试连接</el-button>
+        <el-button type="primary" @click="saveCloudConfig" :loading="isSavingConfig">确定</el-button>
       </template>
     </el-dialog>
 
@@ -177,8 +190,8 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import { 
   ElButton, 
   ElDialog,
@@ -186,8 +199,11 @@ import {
   ElForm,
   ElFormItem,
   ElInput,
-  ElMessage
+  ElMessage,
+  ElTag
 } from 'element-plus';
+import SettingService from '@/services/settingService';
+import type { SettingApi } from '@/types/api';
 
 // 录制语音相关状态
 const isRecording = ref(false);
@@ -202,12 +218,58 @@ const showTtsModelDialog = ref(false);
 const showVectorModelDialog = ref(false);
 
 // 配置数据
-const cloudConfig = ref({ apiKey: '' });
+const cloudConfig = ref<SettingApi.CloudConfig>({ apiKey: '' });
+
+// 加载状态
+const isTestingApiKey = ref(false);
+const isSavingConfig = ref(false);
 
 // 文件输入引用
-const chatFileInput = ref(null);
-const ttsFileInput = ref(null);
-const vectorFileInput = ref(null);
+const chatFileInput = ref<HTMLInputElement | null>(null);
+const ttsFileInput = ref<HTMLInputElement | null>(null);
+const vectorFileInput = ref<HTMLInputElement | null>(null);
+
+// 页面挂载时加载已保存的配置
+onMounted(async () => {
+  await loadSavedConfig();
+});
+
+// 加载已保存的配置
+const loadSavedConfig = async () => {
+  try {
+    const response = await SettingService.getMiniMaxApiKey();
+    if (response.apiKey) {
+      cloudConfig.value.apiKey = response.apiKey;
+    }
+  } catch (error) {
+    // 如果没有保存的配置，忽略错误
+    console.log('没有找到已保存的API Key配置');
+  }
+};
+
+// 测试API Key
+const testApiKey = async () => {
+  if (!cloudConfig.value.apiKey.trim()) {
+    ElMessage.error('请先输入API Key');
+    return;
+  }
+  
+  isTestingApiKey.value = true;
+  try {
+    const response = await SettingService.testMiniMaxApiKey(cloudConfig.value.apiKey);
+    
+    if (response.success) {
+      ElMessage.success('API Key 测试成功！');
+    } else {
+      ElMessage.error(`API Key 测试失败：${response.failureReason || '未知错误'}`);
+    }
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '测试API Key时发生错误');
+    console.error('测试API Key错误:', error);
+  } finally {
+    isTestingApiKey.value = false;
+  }
+};
 
 // 录制语音相关方法
 const startRecording = () => {
@@ -260,26 +322,41 @@ const openVectorModelDialog = () => {
 };
 
 // 配置保存方法
-const saveCloudConfig = () => {
-  if (cloudConfig.value.apiKey.trim()) {
-    ElMessage.success('云端模型配置保存成功');
-    showCloudConfigDialog.value = false;
-  } else {
+const saveCloudConfig = async () => {
+  if (!cloudConfig.value.apiKey.trim()) {
     ElMessage.error('请输入有效的API Key');
+    return;
+  }
+
+  isSavingConfig.value = true;
+  try {
+    const result = await SettingService.validateAndSaveMiniMaxApiKey(cloudConfig.value.apiKey);
+    
+    if (result.success) {
+      ElMessage.success(result.message);
+      showCloudConfigDialog.value = false;
+    } else {
+      ElMessage.error(`API Key无效：${result.message}`);
+    }
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '保存配置时发生错误');
+    console.error('保存配置错误:', error);
+  } finally {
+    isSavingConfig.value = false;
   }
 };
 
 // 文件选择方法
 const selectChatModelFile = () => {
-  chatFileInput.value.click();
+  chatFileInput.value?.click();
 };
 
 const selectTtsModelFile = () => {
-  ttsFileInput.value.click();
+  ttsFileInput.value?.click();
 };
 
 const selectVectorModelFile = () => {
-  vectorFileInput.value.click();
+  vectorFileInput.value?.click();
 };
 </script>
 
@@ -343,6 +420,10 @@ const selectVectorModelFile = () => {
   line-height: 1.6;
 }
 
+.status-info {
+  margin-top: 20px;
+}
+
 /* 声音录制对话框样式 */
 .voice-recording-container {
   display: flex;
@@ -401,6 +482,10 @@ const selectVectorModelFile = () => {
 
 .platform-intro li {
   margin-bottom: 5px;
+}
+
+.testing-status {
+  margin-top: 15px;
 }
 
 /* 导入对话框样式 */

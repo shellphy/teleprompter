@@ -4,12 +4,21 @@ from pydantic import BaseModel
 from ..entities.setting import Setting
 from ..services import minimax_service
 
+class NoneModel(BaseModel):
+    pass
+
 class TestApiKeyBody(BaseModel):
     apiKey: str
 
 class TestApiKeyResponse(BaseModel):
     success: bool
     failureReason: str | None = None
+    
+class GetMiniMaxApiKeyResponse(BaseModel):
+    apiKey: str
+    
+class SetMiniMaxApiKeyBody(BaseModel):
+    apiKey: str
     
 
 def register_settings_commands(commands: Commands) -> None:
@@ -25,17 +34,20 @@ def register_settings_commands(commands: Commands) -> None:
     #     """更新指定分类的配置列表"""
     #     print("updateCategorySettings")
          
-    # @commands.command()
-    # async def setMiniMaxApiKey(apiKey: str):
-    #     """设置MiniMax的API Key"""
-    #     setting = Setting(category="miniMax", name="apiKey", payload=apiKey)
-    #     await setting.save()
+    @commands.command()
+    async def setMiniMaxApiKey(body: SetMiniMaxApiKeyBody) -> NoneModel:
+        """设置MiniMax的API Key"""
+        setting = Setting(category="miniMax", name="apiKey", payload=body.apiKey)
+        await setting.save()
+        return NoneModel()
     
-    # @commands.command()
-    # async def getMiniMaxApiKey():
-    #     """获取MiniMax的API Key"""
-    #     setting = await Setting.filter(category="miniMax", name="apiKey").first()
-    #     return setting.payload
+    @commands.command()
+    async def getMiniMaxApiKey() -> GetMiniMaxApiKeyResponse:
+        """获取MiniMax的API Key"""
+        setting = await Setting.filter(category="miniMax", name="apiKey").first()
+        if setting is None:
+            return GetMiniMaxApiKeyResponse(apiKey="")
+        return GetMiniMaxApiKeyResponse(apiKey=setting.payload)
     
     @commands.command()
     async def testMiniMaxApiKey(body: TestApiKeyBody) -> TestApiKeyResponse:
