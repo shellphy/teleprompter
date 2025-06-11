@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use grove_lib::{ext_mod, tauri_generate_context};
+use teleprompter_lib::{ext_mod, tauri_generate_context};
 use pyo3::wrap_pymodule;
 use pytauri::standalone::{
     dunce::simplified, PythonInterpreterBuilder, PythonInterpreterEnv, PythonScript,
