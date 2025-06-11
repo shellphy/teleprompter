@@ -27,10 +27,8 @@ def main() -> int:
         
         # 构建应用程序
         app = builder_factory().build(
-            BuilderArgs(
-                context=context_factory(),
-                invoke_handler=commands.generate_handler(portal),
-            )
+            context=context_factory(),
+            invoke_handler=commands.generate_handler(portal),
         )
         
         # 执行启动任务

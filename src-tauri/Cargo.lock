@@ -2827,11 +2827,10 @@ dependencies = [
 
 [[package]]
 name = "pyo3"
-version = "0.24.2"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5203598f366b11a02b13aa20cab591229ff0a89fd121a308a5df751d5fc9219"
+checksum = "f239d656363bcee73afef85277f1b281e8ac6212a1d42aa90e55b90ed43c47a4"
 dependencies = [
- "cfg-if",
  "indoc",
  "libc",
  "memoffset",
@@ -2845,9 +2844,9 @@ dependencies = [
 
 [[package]]
 name = "pyo3-build-config"
-version = "0.24.2"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99636d423fa2ca130fa5acde3059308006d46f98caac629418e53f7ebb1e9999"
+checksum = "755ea671a1c34044fa165247aaf6f419ca39caa6003aee791a0df2713d8f1b6d"
 dependencies = [
  "once_cell",
  "target-lexicon 0.13.2",
@@ -2855,9 +2854,9 @@ dependencies = [
 
 [[package]]
 name = "pyo3-ffi"
-version = "0.24.2"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78f9cf92ba9c409279bc3305b5409d90db2d2c22392d443a87df3a1adad59e33"
+checksum = "fc95a2e67091e44791d4ea300ff744be5293f394f1bafd9f78c080814d35956e"
 dependencies = [
  "libc",
  "pyo3-build-config",
@@ -2865,9 +2864,9 @@ dependencies = [
 
 [[package]]
 name = "pyo3-macros"
-version = "0.24.2"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b999cb1a6ce21f9a6b147dcf1be9ffedf02e0043aec74dc390f3007047cecd9"
+checksum = "a179641d1b93920829a62f15e87c0ed791b6c8db2271ba0fd7c2686090510214"
 dependencies = [
  "proc-macro2",
  "pyo3-macros-backend",
@@ -2877,9 +2876,9 @@ dependencies = [
 
 [[package]]
 name = "pyo3-macros-backend"
-version = "0.24.2"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "822ece1c7e1012745607d5cf0bcb2874769f0f7cb34c4cde03b9358eb9ef911a"
+checksum = "9dff85ebcaab8c441b0e3f7ae40a6963ecea8a9f5e74f647e33fcf5ec9a1e89e"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -2890,9 +2889,9 @@ dependencies = [
 
 [[package]]
 name = "pyo3-utils"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "374976a4a8135402403409ec415cdd4d3e34f586ba0f5b9690db99793296d4c3"
+checksum = "2a9297f3bf44e273ae1c799d9427d95986ec0e77619a625634f720a1e8cc7668"
 dependencies = [
  "parking_lot",
  "pyo3",
@@ -2900,9 +2899,9 @@ dependencies = [
 
 [[package]]
 name = "pytauri"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d658fb819a2f3d8cf08e384f392d35dae955d1a3eebe94f618982635d9ee0fa"
+checksum = "6dbe0539d482cdaa777b5e4742397e03fb785da1ef29181157cbbc2c87c10507"
 dependencies = [
  "pyo3",
  "pyo3-utils",
@@ -2913,9 +2912,9 @@ dependencies = [
 
 [[package]]
 name = "pytauri-core"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "466d5065f9dd9b0463c6de6e18db8cc46b01693394ab39a99b9a3acbf8218684"
+checksum = "2064760d13fffa43c0c26015398debe55a07e4f623debbccfc601d0530f6325c"
 dependencies = [
  "pyo3",
  "pyo3-utils",
@@ -3880,9 +3879,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-pytauri"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e41c5246562405f57e1f1a0b50316f220c1c150bd5ac907e7b23650612d44a1e"
+checksum = "b7fd7f064364d7a566376efe7e9fdab11ca4c672e5d7bafa3c7c0c44ac88c7b9"
 dependencies = [
  "pyo3",
  "pyo3-build-config",
