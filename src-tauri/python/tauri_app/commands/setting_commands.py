@@ -4,9 +4,6 @@ from pydantic import BaseModel
 from ..entities.setting import Setting
 from ..services import minimax_service
 
-class NoneModel(BaseModel):
-    pass
-
 class TestApiKeyBody(BaseModel):
     apiKey: str
 
@@ -35,11 +32,11 @@ def register_settings_commands(commands: Commands) -> None:
     #     print("updateCategorySettings")
          
     @commands.command()
-    async def setMiniMaxApiKey(body: SetMiniMaxApiKeyBody) -> NoneModel:
+    async def setMiniMaxApiKey(body: SetMiniMaxApiKeyBody) -> bytes:
         """设置MiniMax的API Key"""
         setting = Setting(category="miniMax", name="apiKey", payload=body.apiKey)
         await setting.save()
-        return NoneModel()
+        return b"null"
     
     @commands.command()
     async def getMiniMaxApiKey() -> GetMiniMaxApiKeyResponse:
