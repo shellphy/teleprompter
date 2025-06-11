@@ -1,137 +1,21 @@
 <template>
   <div class="page-container">
-    <div class="models-container">
-      <!-- 检索引擎管理 -->
-      <el-card class="model-card">
-        <template #header>
-          <div class="card-header">
-            <h3>语义检索引擎</h3>
-            <div class="model-status">
-              <el-tag type="success" v-if="retrievalModelStatus">已导入</el-tag>
-              <el-tag type="info" v-if="!retrievalModelStatus">未导入</el-tag>
-              <el-button 
-                type="primary" 
-                @click="importRetrievalModel"
-                v-if="!retrievalModelStatus">
-                导入模型
-              </el-button>
-              <el-button 
-                type="primary" 
-                @click="openRetrievalCloudDialog"
-                v-if="!retrievalModelStatus">
-                云端模型
-              </el-button>
-              <el-button 
-                type="danger" 
-                @click="removeRetrievalModel"
-                v-if="retrievalModelStatus">
-                移除模型
-              </el-button>
-            </div>
-          </div>
-        </template>
-        <div class="card-content">
-          <div class="model-description">
-            <p>语义检索引擎能够理解知识库内容，帮助您在直播过程中快速获取相关信息。通过深度语义理解，能够精准匹配粉丝提问与知识库内容，提升直播互动效率。</p>
-            <div class="compact-requirements">
-              <p class="requirements-title">模型选择：</p>
-              <div class="requirements-content">
-                本地模型对电脑硬件配置有一定要求，如果您的设备性能有限，建议选择云端模型。
-              </div>
-            </div>
-          </div>
-        </div>
-      </el-card>
+    <div class="page-header">
+      <h1>模型管理</h1>
+      <div class="header-actions">
+        <el-button type="primary" @click="openCloudConfigDialog">配置云端模型</el-button>
+        <el-button type="success" @click="openChatModelDialog">导入本地对话模型</el-button>
+        <el-button type="info" @click="openVectorModelDialog">导入本地向量模型</el-button>
+        <el-button type="warning" @click="openTtsModelDialog">导入本地语音模型</el-button>
+        <el-button type="primary" @click="openVoiceRecordingDialog">录制语音样本</el-button>
+      </div>
+    </div>
 
-      <!-- 语音合成引擎管理 -->
-      <el-card class="model-card">
-        <template #header>
-          <div class="card-header">
-            <h3>声音克隆引擎</h3>
-            <div class="model-status">
-              <el-tag type="success" v-if="ttsModelStatus">已导入</el-tag>
-              <el-tag type="info" v-if="!ttsModelStatus">未导入</el-tag>
-              <el-button 
-                type="primary" 
-                @click="importTtsModel"
-                v-if="!ttsModelStatus">
-                导入模型
-              </el-button>
-              <el-button 
-                type="primary" 
-                @click="openTtsCloudDialog"
-                v-if="!ttsModelStatus">
-                云端模型
-              </el-button>
-              <el-button 
-                type="primary" 
-                @click="openVoiceRecordingDialog" 
-                v-if="ttsModelStatus">
-                {{ hasRecording ? '更新录音' : '录制语音' }}
-              </el-button>
-              <el-button 
-                type="danger" 
-                @click="removeTtsModel"
-                v-if="ttsModelStatus">
-                移除模型
-              </el-button>
-            </div>
-          </div>
-        </template>
-        <div class="card-content">
-          <div class="model-description">
-            <p>声音克隆引擎可以模仿您的声音，将文字转换为语音。只需录制10秒左右的语音样本，AI就能学习您独特的音色和语调，为直播提供自然流畅的语音输出。</p>
-            <div class="compact-requirements">
-              <p class="requirements-title">模型选择：</p>
-              <div class="requirements-content">
-                本地模型对电脑硬件配置有一定要求，如果您的设备性能有限，建议选择云端模型。
-              </div>
-            </div>
-          </div>
-        </div>
-      </el-card>
-
-      <!-- 对话模型管理 -->
-      <el-card class="model-card">
-        <template #header>
-          <div class="card-header">
-            <h3>对话引擎</h3>
-            <div class="model-status">
-              <el-tag type="success" v-if="chatModelStatus">已导入</el-tag>
-              <el-tag type="info" v-if="!chatModelStatus">未导入</el-tag>
-              <el-button 
-                type="primary" 
-                @click="importChatModel"
-                v-if="!chatModelStatus">
-                导入模型
-              </el-button>
-              <el-button 
-                type="primary" 
-                @click="openChatCloudDialog"
-                v-if="!chatModelStatus">
-                云端模型
-              </el-button>
-              <el-button 
-                type="danger" 
-                @click="removeChatModel"
-                v-if="chatModelStatus">
-                移除模型
-              </el-button>
-            </div>
-          </div>
-        </template>
-        <div class="card-content">
-          <div class="model-description">
-            <p>对话引擎能够与粉丝自然交流，根据话题库生成有趣内容，并结合知识库快速回答问题。全程在本地运行，保护您的隐私和数据安全。</p>
-            <div class="compact-requirements">
-              <p class="requirements-title">模型选择：</p>
-              <div class="requirements-content">
-                本地模型对电脑硬件配置有一定要求，如果您的设备性能有限，建议选择云端模型。
-              </div>
-            </div>
-          </div>
-        </div>
-      </el-card>
+    <div class="content-area">
+      <div class="welcome-card">
+        <h2>欢迎使用AI直播助手</h2>
+        <p>请使用右上角的按钮来配置您的AI模型。您可以选择云端模型或导入本地模型来开始使用。</p>
+      </div>
     </div>
 
     <!-- 录制语音对话框 -->
@@ -172,109 +56,131 @@
       </div>
     </el-dialog>
 
-    <!-- 检索引擎云端配置对话框 -->
+    <!-- 云端模型配置对话框 -->
     <el-dialog
-      v-model="showRetrievalCloudDialog"
-      title="配置检索引擎云端模型"
-      width="50%"
+      v-model="showCloudConfigDialog"
+      title="配置云端模型"
+      width="60%"
     >
       <div class="cloud-config-container">
-        <el-alert
-          title="云端模型配置"
-          type="info"
-          description="使用云端模型可以获得更好的性能，无需本地算力支持。"
-          :closable="false"
-          show-icon
-        />
-        <el-form :model="retrievalCloudConfig" label-width="100px" style="margin-top: 20px;">
+        <div class="platform-intro">
+          <h3>MiniMax AI平台</h3>
+          <el-alert
+            title="关于MiniMax"
+            type="info"
+            :closable="false"
+            show-icon
+          >
+            <template #default>
+              <p>MiniMax是一家专注于通用人工智能技术的公司，提供高质量的大语言模型和多模态AI服务。通过MiniMax API，您可以获得：</p>
+              <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>强大的自然语言理解和生成能力</li>
+                <li>多模态内容处理（文本、语音、图像）</li>
+                <li>高效稳定的云端服务</li>
+                <li>灵活的API调用方式</li>
+              </ul>
+              <p>请访问 <a href="https://api.minimax.chat/" target="_blank" style="color: #409eff;">MiniMax官网</a> 获取您的API Key。</p>
+            </template>
+          </el-alert>
+        </div>
+        
+        <el-form :model="cloudConfig" label-width="100px" style="margin-top: 20px;">
           <el-form-item label="API Key">
             <el-input 
-              v-model="retrievalCloudConfig.apiKey" 
-              placeholder="请输入您的API Key"
+              v-model="cloudConfig.apiKey" 
+              placeholder="请输入您的MiniMax API Key"
               show-password
             />
           </el-form-item>
         </el-form>
       </div>
       <template #footer>
-        <el-button @click="showRetrievalCloudDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveRetrievalCloudConfig">确定</el-button>
+        <el-button @click="showCloudConfigDialog = false">取消</el-button>
+        <el-button type="primary" @click="saveCloudConfig">确定</el-button>
       </template>
     </el-dialog>
 
-    <!-- 语音合成云端配置对话框 -->
+    <!-- 导入对话模型对话框 -->
     <el-dialog
-      v-model="showTtsCloudDialog"
-      title="配置声音克隆云端模型"
+      v-model="showChatModelDialog"
+      title="导入对话模型"
       width="50%"
     >
-      <div class="cloud-config-container">
+      <div class="import-dialog-container">
         <el-alert
-          title="云端模型配置"
+          title="导入本地对话模型"
           type="info"
-          description="使用云端模型可以获得更好的性能，无需本地算力支持。"
+          description="请选择您要导入的对话模型文件（支持 .gguf, .bin 格式）"
           :closable="false"
           show-icon
         />
-        <el-form :model="ttsCloudConfig" label-width="100px" style="margin-top: 20px;">
-          <el-form-item label="API Key">
-            <el-input 
-              v-model="ttsCloudConfig.apiKey" 
-              placeholder="请输入您的API Key"
-              show-password
-            />
-          </el-form-item>
-        </el-form>
+        <div class="import-actions" style="margin-top: 20px;">
+          <el-button type="primary" @click="selectChatModelFile">选择文件</el-button>
+          <input ref="chatFileInput" type="file" style="display: none" accept=".gguf,.bin">
+        </div>
       </div>
       <template #footer>
-        <el-button @click="showTtsCloudDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveTtsCloudConfig">确定</el-button>
+        <el-button @click="showChatModelDialog = false">取消</el-button>
+        <el-button type="primary">导入</el-button>
       </template>
     </el-dialog>
 
-    <!-- 对话引擎云端配置对话框 -->
+    <!-- 导入语音模型对话框 -->
     <el-dialog
-      v-model="showChatCloudDialog"
-      title="配置对话引擎云端模型"
+      v-model="showTtsModelDialog"
+      title="导入语音模型"
       width="50%"
     >
-      <div class="cloud-config-container">
+      <div class="import-dialog-container">
         <el-alert
-          title="云端模型配置"
+          title="导入本地语音模型"
           type="info"
-          description="使用云端模型可以获得更好的性能，无需本地算力支持。"
+          description="请选择您要导入的语音合成模型文件（支持 .pth, .onnx 格式）"
           :closable="false"
           show-icon
         />
-        <el-form :model="chatCloudConfig" label-width="100px" style="margin-top: 20px;">
-          <el-form-item label="API Key">
-            <el-input 
-              v-model="chatCloudConfig.apiKey" 
-              placeholder="请输入您的API Key"
-              show-password
-            />
-          </el-form-item>
-        </el-form>
+        <div class="import-actions" style="margin-top: 20px;">
+          <el-button type="primary" @click="selectTtsModelFile">选择文件</el-button>
+          <input ref="ttsFileInput" type="file" style="display: none" accept=".pth,.onnx">
+        </div>
       </div>
       <template #footer>
-        <el-button @click="showChatCloudDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveChatCloudConfig">确定</el-button>
+        <el-button @click="showTtsModelDialog = false">取消</el-button>
+        <el-button type="primary">导入</el-button>
       </template>
     </el-dialog>
 
-    <!-- 隐藏的文件输入 -->
-    <input ref="retrievalFileInput" type="file" style="display: none" @change="handleRetrievalFileSelect" accept=".gguf,.onnx">
-    <input ref="ttsFileInput" type="file" style="display: none" @change="handleTtsFileSelect" accept=".pth,.onnx">
-    <input ref="chatFileInput" type="file" style="display: none" @change="handleChatFileSelect" accept=".gguf,.bin">
+    <!-- 导入向量模型对话框 -->
+    <el-dialog
+      v-model="showVectorModelDialog"
+      title="导入向量模型"
+      width="50%"
+    >
+      <div class="import-dialog-container">
+        <el-alert
+          title="导入本地向量模型"
+          type="info"
+          description="请选择您要导入的向量模型文件（支持 .gguf, .onnx 格式）"
+          :closable="false"
+          show-icon
+        />
+        <div class="import-actions" style="margin-top: 20px;">
+          <el-button type="primary" @click="selectVectorModelFile">选择文件</el-button>
+          <input ref="vectorFileInput" type="file" style="display: none" accept=".gguf,.onnx">
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="showVectorModelDialog = false">取消</el-button>
+        <el-button type="primary">导入</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { 
-  ElCard, 
   ElButton, 
-  ElTag, 
   ElDialog,
   ElAlert,
   ElForm,
@@ -283,117 +189,27 @@ import {
   ElMessage
 } from 'element-plus';
 
-// 检索引擎模型状态
-const retrievalModelStatus = ref(false);
-const retrievalModelInfo = ref(null);
-const retrievalFileInput = ref(null);
-
-// 语音合成引擎状态
-const ttsModelStatus = ref(false);
-const ttsModelInfo = ref(null);
-const ttsFileInput = ref(null);
+// 录制语音相关状态
 const isRecording = ref(false);
 const recordingTime = ref(0);
 const hasRecording = ref(false);
 const showVoiceRecordingDialog = ref(false);
 
-// 对话模型状态
-const chatModelStatus = ref(false);
-const chatModelInfo = ref(null);
+// 对话框状态
+const showCloudConfigDialog = ref(false);
+const showChatModelDialog = ref(false);
+const showTtsModelDialog = ref(false);
+const showVectorModelDialog = ref(false);
+
+// 配置数据
+const cloudConfig = ref({ apiKey: '' });
+
+// 文件输入引用
 const chatFileInput = ref(null);
+const ttsFileInput = ref(null);
+const vectorFileInput = ref(null);
 
-// 云端配置对话框状态
-const showRetrievalCloudDialog = ref(false);
-const showTtsCloudDialog = ref(false);
-const showChatCloudDialog = ref(false);
-
-// 云端配置数据
-const retrievalCloudConfig = ref({ apiKey: '' });
-const ttsCloudConfig = ref({ apiKey: '' });
-const chatCloudConfig = ref({ apiKey: '' });
-
-// 文件大小格式化函数
-const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
-
-// 检索引擎相关方法
-const importRetrievalModel = () => {
-  retrievalFileInput.value.click();
-};
-
-const handleRetrievalFileSelect = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    retrievalModelInfo.value = {
-      name: file.name,
-      size: formatFileSize(file.size)
-    };
-    retrievalModelStatus.value = true;
-  }
-};
-
-const removeRetrievalModel = () => {
-  retrievalModelStatus.value = false;
-  retrievalModelInfo.value = null;
-};
-
-const openRetrievalCloudDialog = () => {
-  showRetrievalCloudDialog.value = true;
-};
-
-const saveRetrievalCloudConfig = () => {
-  if (retrievalCloudConfig.value.apiKey.trim()) {
-    retrievalModelStatus.value = true;
-    retrievalModelInfo.value = {
-      name: '云端检索模型',
-      size: '云端服务'
-    };
-    showRetrievalCloudDialog.value = false;
-  }
-};
-
-// 语音合成引擎相关方法
-const importTtsModel = () => {
-  ttsFileInput.value.click();
-};
-
-const handleTtsFileSelect = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    ttsModelInfo.value = {
-      name: file.name,
-      size: formatFileSize(file.size)
-    };
-    ttsModelStatus.value = true;
-  }
-};
-
-const removeTtsModel = () => {
-  ttsModelStatus.value = false;
-  ttsModelInfo.value = null;
-  hasRecording.value = false;
-};
-
-const openTtsCloudDialog = () => {
-  showTtsCloudDialog.value = true;
-};
-
-const saveTtsCloudConfig = () => {
-  if (ttsCloudConfig.value.apiKey.trim()) {
-    ttsModelStatus.value = true;
-    ttsModelInfo.value = {
-      name: '云端语音合成模型',
-      size: '云端服务'
-    };
-    showTtsCloudDialog.value = false;
-  }
-};
-
+// 录制语音相关方法
 const startRecording = () => {
   isRecording.value = true;
   recordingTime.value = 0;
@@ -426,40 +242,44 @@ const testVoiceClone = () => {
   audio.play();
 };
 
-// 对话模型相关方法
-const importChatModel = () => {
+// 对话框打开方法
+const openCloudConfigDialog = () => {
+  showCloudConfigDialog.value = true;
+};
+
+const openChatModelDialog = () => {
+  showChatModelDialog.value = true;
+};
+
+const openTtsModelDialog = () => {
+  showTtsModelDialog.value = true;
+};
+
+const openVectorModelDialog = () => {
+  showVectorModelDialog.value = true;
+};
+
+// 配置保存方法
+const saveCloudConfig = () => {
+  if (cloudConfig.value.apiKey.trim()) {
+    ElMessage.success('云端模型配置保存成功');
+    showCloudConfigDialog.value = false;
+  } else {
+    ElMessage.error('请输入有效的API Key');
+  }
+};
+
+// 文件选择方法
+const selectChatModelFile = () => {
   chatFileInput.value.click();
 };
 
-const handleChatFileSelect = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    chatModelInfo.value = {
-      name: file.name,
-      size: formatFileSize(file.size)
-    };
-    chatModelStatus.value = true;
-  }
+const selectTtsModelFile = () => {
+  ttsFileInput.value.click();
 };
 
-const removeChatModel = () => {
-  chatModelStatus.value = false;
-  chatModelInfo.value = null;
-};
-
-const openChatCloudDialog = () => {
-  showChatCloudDialog.value = true;
-};
-
-const saveChatCloudConfig = () => {
-  if (chatCloudConfig.value.apiKey.trim()) {
-    chatModelStatus.value = true;
-    chatModelInfo.value = {
-      name: '云端对话模型',
-      size: '云端服务'
-    };
-    showChatCloudDialog.value = false;
-  }
+const selectVectorModelFile = () => {
+  vectorFileInput.value.click();
 };
 </script>
 
@@ -468,94 +288,59 @@ const saveChatCloudConfig = () => {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-  height: 1000px;
+  height: 100vh;
   overflow-y: auto;
 }
 
-.models-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.model-card {
-  margin-bottom: 5px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.card-header {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 40px;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e6e6e6;
 }
 
-.card-header h3 {
+.page-header h1 {
   margin: 0;
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 600;
+  color: #333;
 }
 
-.model-status {
+.header-actions {
   display: flex;
-  align-items: center;
   gap: 10px;
 }
 
-.card-content {
-  padding: 10px 0;
+.content-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
 }
 
-.model-description {
+.welcome-card {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+}
+
+.welcome-card h2 {
   margin-bottom: 15px;
-}
-
-.model-description p {
-  line-height: 1.5;
-  color: #555;
-  margin-bottom: 10px;
-}
-
-.compact-requirements {
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-top: 10px;
-}
-
-.requirements-title {
-  font-weight: 600;
-  margin-bottom: 6px;
   color: #333;
-}
-
-.requirements-content {
-  color: #666;
-  font-size: 0.9em;
-  line-height: 1.4;
-}
-
-.model-info {
-  background-color: #e8f4f8;
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-top: 10px;
-  border-left: 4px solid #409eff;
-}
-
-.model-info p {
-  margin: 2px 0;
-  font-size: 0.9em;
-}
-
-.model-name {
-  color: #333;
+  font-size: 28px;
   font-weight: 600;
 }
 
-.model-size {
+.welcome-card p {
+  margin-bottom: 25px;
   color: #666;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 /* 声音录制对话框样式 */
@@ -580,21 +365,50 @@ const saveChatCloudConfig = () => {
 }
 
 .sample-content {
-  background-color: white;
-  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
   border-radius: 8px;
-  padding: 10px;
+  padding: 15px;
   margin-bottom: 12px;
   font-weight: 500;
+  line-height: 1.5;
 }
 
 .recording-actions {
   display: flex;
   gap: 10px;
+  justify-content: center;
 }
 
 /* 云端配置对话框样式 */
 .cloud-config-container {
   padding: 0 0 10px 0;
+}
+
+.platform-intro {
+  margin-bottom: 20px;
+}
+
+.platform-intro h3 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 20px;
+}
+
+.platform-intro ul {
+  color: #666;
+}
+
+.platform-intro li {
+  margin-bottom: 5px;
+}
+
+/* 导入对话框样式 */
+.import-dialog-container {
+  padding: 0 0 10px 0;
+}
+
+.import-actions {
+  text-align: center;
 }
 </style> 

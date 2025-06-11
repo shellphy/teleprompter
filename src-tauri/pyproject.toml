@@ -8,6 +8,7 @@ dependencies = [
     "pydantic == 2.*",
     "anyio == 4.*",
     "tortoise-orm>=0.25.1",
+    "openai>=1.86.0",
 ]  
 
 [project.entry-points.pytauri]
