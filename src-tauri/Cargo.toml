@@ -28,6 +28,7 @@ tauri-plugin-pytauri = { version = "0.6" }
 refinery = { version = "0.8", features = ["rusqlite"] }
 rusqlite = { version = "0.30", features = ["bundled"] }
 tauri-plugin-http = "2"
+tauri-plugin-fs = "2"
 
 [[bin]]
 # the same as the package name
