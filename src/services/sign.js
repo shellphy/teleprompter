@@ -7009,3 +7009,6 @@ function get_sign(md5) {
     }
     return crawler(data)["X-Bogus"];
 }
+
+// 导出函数
+export { get_sign };
