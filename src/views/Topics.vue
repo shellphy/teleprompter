@@ -7,23 +7,24 @@
           <template #header>
             <div class="card-header">
               <span>热门话题</span>
-              <el-button type="primary" @click="generateHotTopics">
-                AI生成热门话题
+              <el-button type="primary" @click="generateHotTopics" :loading="isGeneratingHotTopics">
+                {{ isGeneratingHotTopics ? 'AI正在生成热门话题' : 'AI生成热门话题' }}
               </el-button>
             </div>
           </template>
           <div class="card-content">
             <el-scrollbar>
-              <div class="topics-list">
+              <div>
                 <div v-for="(topic, index) in hotTopics" :key="index" class="topic-item">
                   <div class="topic-content">
-                    <el-tag size="medium" type="success" class="topic-tag">热门</el-tag>
                     <span class="topic-text">{{ topic.content }}</span>
                   </div>
                   <div class="topic-actions">
                     <el-tooltip content="添加到我的话题" placement="top">
                       <el-button type="primary" circle @click="addToMyTopics(topic)">
-                        <el-icon><el-icon-plus /></el-icon>
+                        <el-icon>
+                          <el-icon-plus/>
+                        </el-icon>
                       </el-button>
                     </el-tooltip>
                   </div>
@@ -51,13 +52,13 @@
           </template>
           <div class="card-content">
             <el-scrollbar>
-              <div class="topics-list">
+              <div>
                 <div v-for="(topic, index) in customTopics" :key="index" class="topic-item">
                   <div class="topic-content">
-                    <el-tag 
-                      size="medium" 
-                      :type="topic.enabled ? 'primary' : 'info'" 
-                      class="topic-tag"
+                    <el-tag
+                        size="small"
+                        :type="topic.enabled ? 'primary' : 'info'"
+                        class="topic-tag"
                     >
                       {{ topic.enabled ? '已启用' : '已关闭' }}
                     </el-tag>
@@ -65,25 +66,29 @@
                   </div>
                   <div class="topic-actions">
                     <el-tooltip :content="topic.enabled ? '关闭话题' : '启用话题'" placement="top">
-                      <el-button 
-                        :type="topic.enabled ? 'warning' : 'success'" 
-                        circle 
-                        @click="toggleTopicStatus(topic, 'custom')"
+                      <el-button
+                          :type="topic.enabled ? 'warning' : 'success'"
+                          circle
+                          @click="toggleTopicStatus(topic, 'custom')"
                       >
                         <el-icon>
-                          <el-icon-open v-if="!topic.enabled" />
-                          <el-icon-turn-off v-else />
+                          <el-icon-open v-if="!topic.enabled"/>
+                          <el-icon-turn-off v-else/>
                         </el-icon>
                       </el-button>
                     </el-tooltip>
                     <el-tooltip content="编辑" placement="top">
                       <el-button type="primary" circle @click="editTopic(topic)">
-                        <el-icon><el-icon-edit /></el-icon>
+                        <el-icon>
+                          <el-icon-edit/>
+                        </el-icon>
                       </el-button>
                     </el-tooltip>
                     <el-tooltip content="删除" placement="top">
                       <el-button type="danger" circle @click="deleteTopic(topic, 'custom')">
-                        <el-icon><el-icon-delete /></el-icon>
+                        <el-icon>
+                          <el-icon-delete/>
+                        </el-icon>
                       </el-button>
                     </el-tooltip>
                   </div>
@@ -108,39 +113,24 @@
           </template>
           <div class="card-content">
             <el-scrollbar>
-              <div class="topics-list">
+              <div>
                 <div v-for="(topic, index) in forbiddenTopics" :key="index" class="topic-item">
                   <div class="topic-content">
-                    <el-tag 
-                      size="medium" 
-                      :type="topic.enabled ? 'danger' : 'info'" 
-                      class="topic-tag"
-                    >
-                      {{ topic.enabled ? '已启用' : '已关闭' }}
-                    </el-tag>
                     <span class="topic-text">{{ topic.content }}</span>
                   </div>
                   <div class="topic-actions">
-                    <el-tooltip :content="topic.enabled ? '关闭禁止' : '启用禁止'" placement="top">
-                      <el-button 
-                        :type="topic.enabled ? 'warning' : 'danger'" 
-                        circle 
-                        @click="toggleTopicStatus(topic, 'forbidden')"
-                      >
-                        <el-icon>
-                          <el-icon-open v-if="!topic.enabled" />
-                          <el-icon-turn-off v-else />
-                        </el-icon>
-                      </el-button>
-                    </el-tooltip>
                     <el-tooltip content="编辑" placement="top">
                       <el-button type="primary" circle @click="editForbiddenTopic(topic)">
-                        <el-icon><el-icon-edit /></el-icon>
+                        <el-icon>
+                          <el-icon-edit/>
+                        </el-icon>
                       </el-button>
                     </el-tooltip>
                     <el-tooltip content="删除" placement="top">
                       <el-button type="danger" circle @click="deleteTopic(topic, 'forbidden')">
-                        <el-icon><el-icon-delete /></el-icon>
+                        <el-icon>
+                          <el-icon-delete/>
+                        </el-icon>
                       </el-button>
                     </el-tooltip>
                   </div>
@@ -159,11 +149,11 @@
     <el-dialog v-model="addTopicDialogVisible" title="添加自定义话题" width="500px">
       <el-form :model="newTopic" label-width="80px">
         <el-form-item label="话题内容">
-          <el-input 
-            v-model="newTopic.content" 
-            type="textarea" 
-            :rows="4"
-            placeholder="请输入话题内容"
+          <el-input
+              v-model="newTopic.content"
+              type="textarea"
+              :rows="4"
+              placeholder="请输入话题内容"
           ></el-input>
         </el-form-item>
       </el-form>
@@ -179,11 +169,11 @@
     <el-dialog v-model="addForbiddenDialogVisible" title="添加禁止话题" width="500px">
       <el-form :model="newForbiddenTopic" label-width="80px">
         <el-form-item label="话题内容">
-          <el-input 
-            v-model="newForbiddenTopic.content" 
-            type="textarea" 
-            :rows="4"
-            placeholder="请输入禁止话题内容"
+          <el-input
+              v-model="newForbiddenTopic.content"
+              type="textarea"
+              :rows="4"
+              placeholder="请输入禁止话题内容"
           ></el-input>
         </el-form-item>
       </el-form>
@@ -198,8 +188,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import {ref, reactive, onMounted} from 'vue';
+import {ElMessage, ElMessageBox} from 'element-plus';
 import {
   Plus as ElIconPlus,
   Edit as ElIconEdit,
@@ -232,6 +222,7 @@ const newForbiddenTopic = reactive({
 // 加载状态
 const isLoadingTopics = ref(false);
 const isLoadingBlocks = ref(false);
+const isGeneratingHotTopics = ref(false);
 
 // 页面挂载时加载数据
 onMounted(async () => {
@@ -291,13 +282,6 @@ const showAddForbiddenDialog = () => {
 
 // 添加热门话题到我的话题
 const addToMyTopics = async (topic) => {
-  // 检查是否已经存在
-  const exists = customTopics.value.some(t => t.content === topic.content);
-  if (exists) {
-    ElMessage.warning('该话题已在我的话题列表中');
-    return;
-  }
-
   try {
     const newTopic = await TopicService.addTopic(topic.content);
     customTopics.value.push({
@@ -314,35 +298,26 @@ const addToMyTopics = async (topic) => {
 
 // 切换话题状态
 const toggleTopicStatus = async (topic, type) => {
-  if (type === 'custom') {
-    try {
-      let result;
-      if (topic.enabled) {
-        result = await TopicService.disableTopic(topic.id);
-      } else {
-        result = await TopicService.enableTopic(topic.id);
+  try {
+    let result;
+    if (topic.enabled) {
+      result = await TopicService.disableTopic(topic.id);
+    } else {
+      result = await TopicService.enableTopic(topic.id);
+    }
+
+    if (result) {
+      const index = customTopics.value.findIndex(t => t.id === topic.id);
+      if (index !== -1) {
+        customTopics.value[index].enabled = !customTopics.value[index].enabled;
+        ElMessage.success(`话题已${customTopics.value[index].enabled ? '启用' : '关闭'}`);
       }
-      
-      if (result) {
-        const index = customTopics.value.findIndex(t => t.id === topic.id);
-        if (index !== -1) {
-          customTopics.value[index].enabled = !customTopics.value[index].enabled;
-          ElMessage.success(`话题已${customTopics.value[index].enabled ? '启用' : '关闭'}`);
-        }
-      } else {
-        ElMessage.error('切换话题状态失败');
-      }
-    } catch (error) {
+    } else {
       ElMessage.error('切换话题状态失败');
-      console.error('切换话题状态失败:', error);
     }
-  } else if (type === 'forbidden') {
-    // 屏蔽话题的启用/禁用逻辑（这里只是前端状态切换，因为后端没有对应的接口）
-    const index = forbiddenTopics.value.findIndex(t => t.id === topic.id);
-    if (index !== -1) {
-      forbiddenTopics.value[index].enabled = !forbiddenTopics.value[index].enabled;
-      ElMessage.success(`禁止话题已${forbiddenTopics.value[index].enabled ? '启用' : '关闭'}`);
-    }
+  } catch (error) {
+    ElMessage.error('切换话题状态失败');
+    console.error('切换话题状态失败:', error);
   }
 };
 
@@ -352,7 +327,7 @@ const saveCustomTopic = async () => {
     ElMessage.warning('话题内容不能为空');
     return;
   }
-  
+
   try {
     if (isEditing.value) {
       const result = await TopicService.updateTopic(editingTopicId.value, newTopic.content);
@@ -377,7 +352,7 @@ const saveCustomTopic = async () => {
       });
       ElMessage.success('话题添加成功');
     }
-    
+
     addTopicDialogVisible.value = false;
   } catch (error) {
     ElMessage.error(isEditing.value ? '话题更新失败' : '话题添加失败');
@@ -391,17 +366,21 @@ const saveForbiddenTopic = async () => {
     ElMessage.warning('话题内容不能为空');
     return;
   }
-  
+
   try {
     if (isEditing.value) {
-      // 注意：这里没有更新屏蔽话题的后端接口，只做前端更新
-      const index = forbiddenTopics.value.findIndex(item => item.id === editingTopicId.value);
-      if (index !== -1) {
-        forbiddenTopics.value[index] = {
-          ...forbiddenTopics.value[index],
-          content: newForbiddenTopic.content
-        };
-        ElMessage.success('禁止话题更新成功');
+      const result = await TopicService.updateBlock(editingTopicId.value, newForbiddenTopic.content);
+      if (result) {
+        const index = forbiddenTopics.value.findIndex(item => item.id === editingTopicId.value);
+        if (index !== -1) {
+          forbiddenTopics.value[index] = {
+            ...forbiddenTopics.value[index],
+            content: newForbiddenTopic.content
+          };
+          ElMessage.success('禁止话题更新成功');
+        }
+      } else {
+        ElMessage.error('禁止话题更新失败');
       }
     } else {
       const block = await TopicService.addBlock(newForbiddenTopic.content);
@@ -412,7 +391,7 @@ const saveForbiddenTopic = async () => {
       });
       ElMessage.success('禁止话题添加成功');
     }
-    
+
     addForbiddenDialogVisible.value = false;
   } catch (error) {
     ElMessage.error(isEditing.value ? '禁止话题更新失败' : '禁止话题添加失败');
@@ -439,55 +418,62 @@ const editForbiddenTopic = (topic) => {
 // 删除话题
 const deleteTopic = (topic, type) => {
   ElMessageBox.confirm(
-    '确定要删除这个话题吗？',
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  )
-    .then(async () => {
-      try {
-        if (type === 'hot') {
-          hotTopics.value = hotTopics.value.filter(item => item.id !== topic.id);
-          ElMessage.success('删除成功');
-        } else if (type === 'custom') {
-          const result = await TopicService.removeTopic(topic.id);
-          if (result) {
-            customTopics.value = customTopics.value.filter(item => item.id !== topic.id);
-            ElMessage.success('删除成功');
-          } else {
-            ElMessage.error('删除失败');
-          }
-        } else if (type === 'forbidden') {
-          const result = await TopicService.removeBlock(topic.content);
-          if (result) {
-            forbiddenTopics.value = forbiddenTopics.value.filter(item => item.id !== topic.id);
-            ElMessage.success('删除成功');
-          } else {
-            ElMessage.error('删除失败');
-          }
-        }
-      } catch (error) {
-        ElMessage.error('删除失败');
-        console.error('删除话题失败:', error);
+      '确定要删除这个话题吗？',
+      '警告',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
       }
-    })
-    .catch(() => {
-      // 取消删除
-    });
+  )
+      .then(async () => {
+        try {
+          if (type === 'custom') {
+            // 删除自定义话题
+            const result = await TopicService.removeTopic(topic.id);
+            if (result) {
+              const index = customTopics.value.findIndex(t => t.id === topic.id);
+              if (index !== -1) {
+                customTopics.value.splice(index, 1);
+                ElMessage.success('话题删除成功');
+              }
+            } else {
+              ElMessage.error('话题删除失败');
+            }
+          } else if (type === 'forbidden') {
+            // 删除禁止话题，使用name而不是id
+            const result = await TopicService.removeBlock(topic.content);
+            if (result) {
+              const index = forbiddenTopics.value.findIndex(t => t.id === topic.id);
+              if (index !== -1) {
+                forbiddenTopics.value.splice(index, 1);
+                ElMessage.success('禁止话题删除成功');
+              }
+            } else {
+              ElMessage.error('禁止话题删除失败');
+            }
+          }
+        } catch (error) {
+          ElMessage.error('删除失败');
+          console.error('删除话题失败:', error);
+        }
+      })
+      .catch(() => {
+        // 取消删除
+      });
 };
 
 // 使用AI生成热门话题
 const generateHotTopics = async () => {
+  if (isGeneratingHotTopics.value) return; // 防止重复点击
+
+  isGeneratingHotTopics.value = true;
   try {
-    ElMessage.info('正在生成热门话题...');
     const aiTopics = await TopicService.generateHotTopicByAI();
-    
+
     // 清空现有热门话题
     hotTopics.value = [];
-    
+
     // 添加AI生成的话题
     aiTopics.forEach((topic, index) => {
       hotTopics.value.push({
@@ -496,25 +482,25 @@ const generateHotTopics = async () => {
         tag: '热门'
       });
     });
-    
+
     ElMessage.success(`AI已生成${aiTopics.length}个热门话题`);
   } catch (error) {
-    ElMessage.error('AI生成热门话题失败');
-    console.error('AI生成热门话题失败:', error);
+    ElMessage.error(error)
+  } finally {
+    isGeneratingHotTopics.value = false;
   }
 };
 </script>
 
 <style scoped>
 .page-container {
-  height: 1080px;
   padding: 20px 0;
   box-sizing: border-box;
 }
 
 .content-wrapper {
   width: 1300px;
-  height: 1000px;
+  height: 900px;
   margin: 0 auto;
   display: flex;
   overflow: hidden;
@@ -580,22 +566,15 @@ const generateHotTopics = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
   padding: 0 10px;
-  border-bottom: 1px solid #ebeef5;
-  background: #f9fafb;
   flex-shrink: 0;
-}
-
-.topics-list {
-  padding: 10px 0;
 }
 
 .topic-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  padding: 8px;
   border-bottom: 1px solid #f0f0f0;
 }
 

@@ -34,10 +34,10 @@
 7. 初始化虚拟环境：
    ```shell
    uv venv --python-preference only-system
-   source .venv/bin/activate
    ```
 8. 运行项目：
    ```shell
+   source .venv/bin/activate
    pnpm install
    pnpm run build
    uv pip install -e src-tauri

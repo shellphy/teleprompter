@@ -63,7 +63,7 @@ async def generateHotTopicByAI() -> list[str]:
 -------
 {my_topic_list}
 -------
-你生成的话题不能与上述话题重复。
+注意生成的话题不能与上述话题重复，每个话题前不要有1、2、3这类数字。
 """
 
     setting = await Setting.filter(category="miniMax", name="apiKey").first()

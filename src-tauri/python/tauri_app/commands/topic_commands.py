@@ -50,6 +50,10 @@ class AddBlockBody(BaseModel):
 class RemoveBlockBody(BaseModel):
     name: str
 
+class UpdateBlockBody(BaseModel):
+    blockId: int
+    name: str
+
 def register_topic_commands(commands: Commands) -> None:
     """注册话题相关的命令"""
          
@@ -95,7 +99,7 @@ def register_topic_commands(commands: Commands) -> None:
         """启用话题"""
         topic = await Topic.filter(id=body.topicId).first()
         if topic is None:
-            return BoolResponse(success=False)
+            return b"null"
         topic.enabled = True
         await topic.save()
         return b"null"
@@ -105,7 +109,7 @@ def register_topic_commands(commands: Commands) -> None:
         """禁用话题"""
         topic = await Topic.filter(id=body.topicId).first()
         if topic is None:
-            return BoolResponse(success=False)
+            return b"null"
         topic.enabled = False
         await topic.save()
         return b"null"
@@ -115,7 +119,7 @@ def register_topic_commands(commands: Commands) -> None:
         """更新话题"""
         topic = await Topic.filter(id=body.topicId).first()
         if topic is None:
-            return BoolResponse(success=False)
+            return b"null"
         topic.name = body.name
         await topic.save()
         return b"null"
@@ -151,17 +155,22 @@ def register_topic_commands(commands: Commands) -> None:
             updated_at=block.updated_at.isoformat() if block.updated_at else "",
             name=block.name
         )
+
+    @commands.command()
+    async def updateBlock(body: UpdateBlockBody) -> bytes:
+        """更新屏蔽话题"""
+        block = await Block.filter(id=body.blockId).first()
+        if block is None:
+            return b"null"
+        block.name = body.name
+        await block.save()
+        return b"null"
     
     @commands.command()
     async def removeBlock(body: RemoveBlockBody) -> bytes:
         """移除屏蔽话题"""
         block = await Block.filter(name=body.name).first()
         if block is None:
-            return BoolResponse(success=False)
+            return b"null"
         await block.delete()
-        return b"null"    
-    
-    
-    
-    
-    
+        return b"null"

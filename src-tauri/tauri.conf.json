@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "telepromoter",
+  "productName": "teleprompter",
   "version": "0.1.0",
-  "identifier": "com.telepromoter.app",
+  "identifier": "com.teleprompter.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -13,9 +13,9 @@
   "app": {
     "windows": [
       {
-        "title": "telepromoter",
-        "width": 1280,
-        "height": 720
+        "title": "teleprompter",
+        "width": 1920,
+        "height": 1440
       }
     ],
     "security": {
