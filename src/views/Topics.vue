@@ -166,12 +166,6 @@
             placeholder="请输入话题内容"
           ></el-input>
         </el-form-item>
-        <el-form-item label="话题标签">
-          <el-input 
-            v-model="newTopic.tag" 
-            placeholder="请输入标签，用于分类（可选）"
-          ></el-input>
-        </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -192,14 +186,6 @@
             placeholder="请输入禁止话题内容"
           ></el-input>
         </el-form-item>
-        <el-form-item label="禁止原因">
-          <el-input 
-            v-model="newForbiddenTopic.reason" 
-            type="textarea"
-            :rows="2"
-            placeholder="请输入禁止原因（可选）"
-          ></el-input>
-        </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -212,7 +198,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import {
   Plus as ElIconPlus,
@@ -221,26 +207,12 @@ import {
   Open as ElIconOpen,
   TurnOff as ElIconTurnOff
 } from '@element-plus/icons-vue';
+import TopicService from '@/services/topicService';
 
 // 话题数据
-const hotTopics = ref([
-  { id: 1, content: '最近热播的电视剧《人生若如初相见》有哪些看点？', tag: '娱乐' },
-  { id: 2, content: '现在年轻人为什么都喜欢做副业？', tag: '社会' },
-  { id: 3, content: '如何看待近期的科技行业发展趋势？', tag: '科技' },
-  { id: 4, content: '夏季如何做好皮肤防晒工作？', tag: '美妆' },
-  { id: 5, content: '直播间有没有喜欢旅游的朋友？最近有什么好的旅游目的地推荐？', tag: '旅游' }
-]);
-
-const customTopics = ref([
-  { id: 1, content: '分享一下你最近买的最满意的一款护肤品', tag: '互动', enabled: true },
-  { id: 2, content: '你们平时用什么方法缓解工作压力？', tag: '生活', enabled: false }
-]);
-
-const forbiddenTopics = ref([
-  { id: 1, content: '政治敏感话题', reason: '可能引发争议', enabled: true },
-  { id: 2, content: '竞品比较和负面评价', reason: '违反平台规定', enabled: true },
-  { id: 3, content: '价格投诉和纠纷', reason: '应通过官方客服渠道解决', enabled: false }
-]);
+const hotTopics = ref([]);
+const customTopics = ref([]);
+const forbiddenTopics = ref([]);
 
 // 对话框控制
 const addTopicDialogVisible = ref(false);
@@ -250,20 +222,63 @@ const editingTopicId = ref(null);
 
 // 新话题表单数据
 const newTopic = reactive({
-  content: '',
-  tag: ''
+  content: ''
 });
 
 const newForbiddenTopic = reactive({
-  content: '',
-  reason: ''
+  content: ''
 });
+
+// 加载状态
+const isLoadingTopics = ref(false);
+const isLoadingBlocks = ref(false);
+
+// 页面挂载时加载数据
+onMounted(async () => {
+  await loadTopics();
+  await loadBlocks();
+});
+
+// 加载话题列表
+const loadTopics = async () => {
+  isLoadingTopics.value = true;
+  try {
+    const topics = await TopicService.getTopicList();
+    customTopics.value = topics.map(topic => ({
+      id: topic.id,
+      content: topic.name,
+      enabled: topic.enabled
+    }));
+  } catch (error) {
+    ElMessage.error('加载话题列表失败');
+    console.error('加载话题列表失败:', error);
+  } finally {
+    isLoadingTopics.value = false;
+  }
+};
+
+// 加载屏蔽话题列表
+const loadBlocks = async () => {
+  isLoadingBlocks.value = true;
+  try {
+    const blocks = await TopicService.getBlocksList();
+    forbiddenTopics.value = blocks.map(block => ({
+      id: block.id,
+      content: block.name,
+      enabled: true // 屏蔽话题默认启用
+    }));
+  } catch (error) {
+    ElMessage.error('加载屏蔽话题列表失败');
+    console.error('加载屏蔽话题列表失败:', error);
+  } finally {
+    isLoadingBlocks.value = false;
+  }
+};
 
 // 显示添加话题对话框
 const showAddTopicDialog = () => {
   isEditing.value = false;
   newTopic.content = '';
-  newTopic.tag = '';
   addTopicDialogVisible.value = true;
 };
 
@@ -271,12 +286,11 @@ const showAddTopicDialog = () => {
 const showAddForbiddenDialog = () => {
   isEditing.value = false;
   newForbiddenTopic.content = '';
-  newForbiddenTopic.reason = '';
   addForbiddenDialogVisible.value = true;
 };
 
 // 添加热门话题到我的话题
-const addToMyTopics = (topic) => {
+const addToMyTopics = async (topic) => {
   // 检查是否已经存在
   const exists = customTopics.value.some(t => t.content === topic.content);
   if (exists) {
@@ -284,29 +298,46 @@ const addToMyTopics = (topic) => {
     return;
   }
 
-  const newId = customTopics.value.length > 0 
-    ? Math.max(...customTopics.value.map(t => t.id)) + 1 
-    : 1;
-
-  customTopics.value.push({
-    id: newId,
-    content: topic.content,
-    tag: topic.tag,
-    enabled: true
-  });
-
-  ElMessage.success('话题已添加到我的话题');
+  try {
+    const newTopic = await TopicService.addTopic(topic.content);
+    customTopics.value.push({
+      id: newTopic.id,
+      content: newTopic.name,
+      enabled: newTopic.enabled
+    });
+    ElMessage.success('话题已添加到我的话题');
+  } catch (error) {
+    ElMessage.error('添加话题失败');
+    console.error('添加话题失败:', error);
+  }
 };
 
 // 切换话题状态
-const toggleTopicStatus = (topic, type) => {
+const toggleTopicStatus = async (topic, type) => {
   if (type === 'custom') {
-    const index = customTopics.value.findIndex(t => t.id === topic.id);
-    if (index !== -1) {
-      customTopics.value[index].enabled = !customTopics.value[index].enabled;
-      ElMessage.success(`话题已${customTopics.value[index].enabled ? '启用' : '关闭'}`);
+    try {
+      let result;
+      if (topic.enabled) {
+        result = await TopicService.disableTopic(topic.id);
+      } else {
+        result = await TopicService.enableTopic(topic.id);
+      }
+      
+      if (result) {
+        const index = customTopics.value.findIndex(t => t.id === topic.id);
+        if (index !== -1) {
+          customTopics.value[index].enabled = !customTopics.value[index].enabled;
+          ElMessage.success(`话题已${customTopics.value[index].enabled ? '启用' : '关闭'}`);
+        }
+      } else {
+        ElMessage.error('切换话题状态失败');
+      }
+    } catch (error) {
+      ElMessage.error('切换话题状态失败');
+      console.error('切换话题状态失败:', error);
     }
   } else if (type === 'forbidden') {
+    // 屏蔽话题的启用/禁用逻辑（这里只是前端状态切换，因为后端没有对应的接口）
     const index = forbiddenTopics.value.findIndex(t => t.id === topic.id);
     if (index !== -1) {
       forbiddenTopics.value[index].enabled = !forbiddenTopics.value[index].enabled;
@@ -316,71 +347,77 @@ const toggleTopicStatus = (topic, type) => {
 };
 
 // 保存自定义话题
-const saveCustomTopic = () => {
+const saveCustomTopic = async () => {
   if (!newTopic.content.trim()) {
     ElMessage.warning('话题内容不能为空');
     return;
   }
   
-  if (isEditing.value) {
-    const index = customTopics.value.findIndex(item => item.id === editingTopicId.value);
-    if (index !== -1) {
-      customTopics.value[index] = {
-        ...customTopics.value[index],
-        content: newTopic.content,
-        tag: newTopic.tag
-      };
-      ElMessage.success('话题更新成功');
+  try {
+    if (isEditing.value) {
+      const result = await TopicService.updateTopic(editingTopicId.value, newTopic.content);
+      if (result) {
+        const index = customTopics.value.findIndex(item => item.id === editingTopicId.value);
+        if (index !== -1) {
+          customTopics.value[index] = {
+            ...customTopics.value[index],
+            content: newTopic.content
+          };
+          ElMessage.success('话题更新成功');
+        }
+      } else {
+        ElMessage.error('话题更新失败');
+      }
+    } else {
+      const topic = await TopicService.addTopic(newTopic.content);
+      customTopics.value.push({
+        id: topic.id,
+        content: topic.name,
+        enabled: topic.enabled
+      });
+      ElMessage.success('话题添加成功');
     }
-  } else {
-    const newId = customTopics.value.length > 0 
-      ? Math.max(...customTopics.value.map(t => t.id)) + 1 
-      : 1;
     
-    customTopics.value.push({
-      id: newId,
-      content: newTopic.content,
-      tag: newTopic.tag,
-      enabled: true // 新添加的话题默认启用
-    });
-    ElMessage.success('话题添加成功');
+    addTopicDialogVisible.value = false;
+  } catch (error) {
+    ElMessage.error(isEditing.value ? '话题更新失败' : '话题添加失败');
+    console.error('保存话题失败:', error);
   }
-  
-  addTopicDialogVisible.value = false;
 };
 
 // 保存禁止话题
-const saveForbiddenTopic = () => {
+const saveForbiddenTopic = async () => {
   if (!newForbiddenTopic.content.trim()) {
     ElMessage.warning('话题内容不能为空');
     return;
   }
   
-  if (isEditing.value) {
-    const index = forbiddenTopics.value.findIndex(item => item.id === editingTopicId.value);
-    if (index !== -1) {
-      forbiddenTopics.value[index] = {
-        ...forbiddenTopics.value[index],
-        content: newForbiddenTopic.content,
-        reason: newForbiddenTopic.reason
-      };
-      ElMessage.success('禁止话题更新成功');
+  try {
+    if (isEditing.value) {
+      // 注意：这里没有更新屏蔽话题的后端接口，只做前端更新
+      const index = forbiddenTopics.value.findIndex(item => item.id === editingTopicId.value);
+      if (index !== -1) {
+        forbiddenTopics.value[index] = {
+          ...forbiddenTopics.value[index],
+          content: newForbiddenTopic.content
+        };
+        ElMessage.success('禁止话题更新成功');
+      }
+    } else {
+      const block = await TopicService.addBlock(newForbiddenTopic.content);
+      forbiddenTopics.value.push({
+        id: block.id,
+        content: block.name,
+        enabled: true
+      });
+      ElMessage.success('禁止话题添加成功');
     }
-  } else {
-    const newId = forbiddenTopics.value.length > 0 
-      ? Math.max(...forbiddenTopics.value.map(t => t.id)) + 1 
-      : 1;
     
-    forbiddenTopics.value.push({
-      id: newId,
-      content: newForbiddenTopic.content,
-      reason: newForbiddenTopic.reason,
-      enabled: true // 新添加的禁止话题默认启用
-    });
-    ElMessage.success('禁止话题添加成功');
+    addForbiddenDialogVisible.value = false;
+  } catch (error) {
+    ElMessage.error(isEditing.value ? '禁止话题更新失败' : '禁止话题添加失败');
+    console.error('保存禁止话题失败:', error);
   }
-  
-  addForbiddenDialogVisible.value = false;
 };
 
 // 编辑自定义话题
@@ -388,7 +425,6 @@ const editTopic = (topic) => {
   isEditing.value = true;
   editingTopicId.value = topic.id;
   newTopic.content = topic.content;
-  newTopic.tag = topic.tag || '';
   addTopicDialogVisible.value = true;
 };
 
@@ -397,7 +433,6 @@ const editForbiddenTopic = (topic) => {
   isEditing.value = true;
   editingTopicId.value = topic.id;
   newForbiddenTopic.content = topic.content;
-  newForbiddenTopic.reason = topic.reason || '';
   addForbiddenDialogVisible.value = true;
 };
 
@@ -412,15 +447,32 @@ const deleteTopic = (topic, type) => {
       type: 'warning',
     }
   )
-    .then(() => {
-      if (type === 'hot') {
-        hotTopics.value = hotTopics.value.filter(item => item.id !== topic.id);
-      } else if (type === 'custom') {
-        customTopics.value = customTopics.value.filter(item => item.id !== topic.id);
-      } else if (type === 'forbidden') {
-        forbiddenTopics.value = forbiddenTopics.value.filter(item => item.id !== topic.id);
+    .then(async () => {
+      try {
+        if (type === 'hot') {
+          hotTopics.value = hotTopics.value.filter(item => item.id !== topic.id);
+          ElMessage.success('删除成功');
+        } else if (type === 'custom') {
+          const result = await TopicService.removeTopic(topic.id);
+          if (result) {
+            customTopics.value = customTopics.value.filter(item => item.id !== topic.id);
+            ElMessage.success('删除成功');
+          } else {
+            ElMessage.error('删除失败');
+          }
+        } else if (type === 'forbidden') {
+          const result = await TopicService.removeBlock(topic.content);
+          if (result) {
+            forbiddenTopics.value = forbiddenTopics.value.filter(item => item.id !== topic.id);
+            ElMessage.success('删除成功');
+          } else {
+            ElMessage.error('删除失败');
+          }
+        }
+      } catch (error) {
+        ElMessage.error('删除失败');
+        console.error('删除话题失败:', error);
       }
-      ElMessage.success('删除成功');
     })
     .catch(() => {
       // 取消删除
@@ -428,29 +480,28 @@ const deleteTopic = (topic, type) => {
 };
 
 // 使用AI生成热门话题
-const generateHotTopics = () => {
-  // 模拟AI生成话题
-  setTimeout(() => {
-    const aiGeneratedTopics = [
-      { content: '618购物节你们都准备买什么好物？', tag: '购物' },
-      { content: '如何看待近期的职场"静默辞职"现象？', tag: '职场' },
-      { content: '夏季穿搭有什么好的建议？', tag: '时尚' }
-    ];
+const generateHotTopics = async () => {
+  try {
+    ElMessage.info('正在生成热门话题...');
+    const aiTopics = await TopicService.generateHotTopicByAI();
     
-    const newId = hotTopics.value.length > 0 
-      ? Math.max(...hotTopics.value.map(t => t.id)) + 1 
-      : 1;
+    // 清空现有热门话题
+    hotTopics.value = [];
     
-    aiGeneratedTopics.forEach((topic, index) => {
+    // 添加AI生成的话题
+    aiTopics.forEach((topic, index) => {
       hotTopics.value.push({
-        id: newId + index,
-        content: topic.content,
-        tag: topic.tag
+        id: index + 1,
+        content: topic,
+        tag: '热门'
       });
     });
     
-    ElMessage.success('AI已生成3个热门话题');
-  }, 1000);
+    ElMessage.success(`AI已生成${aiTopics.length}个热门话题`);
+  } catch (error) {
+    ElMessage.error('AI生成热门话题失败');
+    console.error('AI生成热门话题失败:', error);
+  }
 };
 </script>
 

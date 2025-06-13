@@ -6,7 +6,7 @@ from ..entities.block import Block
 from ..services import minimax_service
 
 class AddTopicBody(BaseModel):
-    topicId: int
+    name: str
 
 class RemoveTopicBody(BaseModel):
     topicId: int
