@@ -41,7 +41,7 @@
       <!-- 右侧区域：我的话题和禁止话题 -->
       <div class="right-column">
         <!-- 我的话题区域 -->
-        <el-card class="box-card my-topics">
+        <el-card class="box-card">
           <template #header>
             <div class="card-header">
               <span>我的话题</span>
@@ -51,7 +51,7 @@
             </div>
           </template>
           <div class="card-content">
-            <el-scrollbar>
+            <el-scrollbar height="320px">
               <div>
                 <div v-for="(topic, index) in customTopics" :key="index" class="topic-item">
                   <div class="topic-content">
@@ -101,8 +101,8 @@
           </div>
         </el-card>
 
-        <!-- 禁止话题区域 -->
-        <el-card class="box-card forbidden-topics">
+         禁止话题区域
+        <el-card class="box-card">
           <template #header>
             <div class="card-header">
               <span>禁止话题</span>
@@ -112,7 +112,7 @@
             </div>
           </template>
           <div class="card-content">
-            <el-scrollbar>
+            <el-scrollbar height="320px">
               <div>
                 <div v-for="(topic, index) in forbiddenTopics" :key="index" class="topic-item">
                   <div class="topic-content">
@@ -534,32 +534,10 @@ const generateHotTopics = async () => {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
-.my-topics, .forbidden-topics {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 0;
-  background-color: #fff;
-  border-radius: 8px;
-  border: 1px solid #ebeef5;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.3s ease;
-  overflow: hidden;
-}
-
-.my-topics:hover, .forbidden-topics:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
-
 .box-card {
   height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.card-content {
-  flex: 1;
-  overflow: hidden;
 }
 
 .card-header {
