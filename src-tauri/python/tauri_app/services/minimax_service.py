@@ -4,7 +4,7 @@ from openai import OpenAI
 from typing import Callable
 from ..entities.setting import Setting
 from ..entities.topic import Topic
-from openai.types.chat.chat_completion_message_param import ResponseFormat
+from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 
 async def chatTest(apiKey: str) -> tuple[bool, str]:
     """
@@ -69,7 +69,7 @@ async def generateHotTopicByAI() -> list[str]:
         model="MiniMax-Text-01",
         messages=[{"role": "user", "content": prompt}],
         stream=False,
-        response_format=ResponseFormat(type="json_object", json_schema={"type": "array", "items": {"type": "string"}})
+        response_format=ChatCompletionMessageParam(type="json_object", json_schema={"type": "array", "items": {"type": "string"}})
     )
     result = response.choices[0].message.content
     return json.loads(result)

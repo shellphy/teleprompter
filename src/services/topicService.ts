@@ -7,11 +7,30 @@ export interface Topic {
   id: number;
   name: string;
   enabled: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Block {
   id: number;
   name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * API响应类型定义
+ */
+export interface TopicListResponse {
+  topics: Topic[];
+}
+
+export interface BlockListResponse {
+  blocks: Block[];
+}
+
+export interface HotTopicsResponse {
+  topics: string[];
 }
 
 /**
@@ -24,8 +43,8 @@ export class TopicService {
    */
   static async getTopicList(): Promise<Topic[]> {
     try {
-      const response = await pyInvoke<Topic[]>("getTopicList", {});
-      return response;
+      const response = await pyInvoke<TopicListResponse>("getTopicList", {});
+      return response.topics;
     } catch (error) {
       console.error('获取话题列表失败:', error);
       throw new Error('获取话题列表时发生错误');
@@ -52,10 +71,10 @@ export class TopicService {
    */
   static async removeTopic(topicId: number): Promise<boolean> {
     try {
-      const response = await pyInvoke<boolean>("removeTopic", {
+      await pyInvoke<ArrayBuffer>("removeTopic", {
         topicId
       });
-      return response;
+      return true; // 如果没有抛出异常，就认为操作成功
     } catch (error) {
       console.error('移除话题失败:', error);
       throw new Error('移除话题时发生错误');
@@ -67,10 +86,10 @@ export class TopicService {
    */
   static async enableTopic(topicId: number): Promise<boolean> {
     try {
-      const response = await pyInvoke<boolean>("enableTopic", {
+      await pyInvoke<ArrayBuffer>("enableTopic", {
         topicId
       });
-      return response;
+      return true; // 如果没有抛出异常，就认为操作成功
     } catch (error) {
       console.error('启用话题失败:', error);
       throw new Error('启用话题时发生错误');
@@ -82,10 +101,10 @@ export class TopicService {
    */
   static async disableTopic(topicId: number): Promise<boolean> {
     try {
-      const response = await pyInvoke<boolean>("disableTopic", {
+      await pyInvoke<ArrayBuffer>("disableTopic", {
         topicId
       });
-      return response;
+      return true; // 如果没有抛出异常，就认为操作成功
     } catch (error) {
       console.error('禁用话题失败:', error);
       throw new Error('禁用话题时发生错误');
@@ -97,11 +116,11 @@ export class TopicService {
    */
   static async updateTopic(topicId: number, name: string): Promise<boolean> {
     try {
-      const response = await pyInvoke<boolean>("updateTopic", {
+      await pyInvoke<ArrayBuffer>("updateTopic", {
         topicId,
         name
       });
-      return response;
+      return true; // 如果没有抛出异常，就认为操作成功
     } catch (error) {
       console.error('更新话题失败:', error);
       throw new Error('更新话题时发生错误');
@@ -113,8 +132,8 @@ export class TopicService {
    */
   static async generateHotTopicByAI(): Promise<string[]> {
     try {
-      const response = await pyInvoke<string[]>("generateHotTopicByAI", {});
-      return response;
+      const response = await pyInvoke<HotTopicsResponse>("generateHotTopicByAI", {});
+      return response.topics;
     } catch (error) {
       console.error('AI生成热门话题失败:', error);
       throw new Error('AI生成热门话题时发生错误');
@@ -126,8 +145,8 @@ export class TopicService {
    */
   static async getBlocksList(): Promise<Block[]> {
     try {
-      const response = await pyInvoke<Block[]>("getBlocksList", {});
-      return response;
+      const response = await pyInvoke<BlockListResponse>("getBlocksList", {});
+      return response.blocks;
     } catch (error) {
       console.error('获取屏蔽话题列表失败:', error);
       throw new Error('获取屏蔽话题列表时发生错误');
@@ -154,10 +173,10 @@ export class TopicService {
    */
   static async removeBlock(name: string): Promise<boolean> {
     try {
-      const response = await pyInvoke<boolean>("removeBlock", {
+      await pyInvoke<ArrayBuffer>("removeBlock", {
         name
       });
-      return response;
+      return true; // 如果没有抛出异常，就认为操作成功
     } catch (error) {
       console.error('移除屏蔽话题失败:', error);
       throw new Error('移除屏蔽话题时发生错误');
