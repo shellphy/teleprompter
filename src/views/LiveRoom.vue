@@ -20,30 +20,33 @@
                 v-model="roomId"
               >
               </el-input>
-              <el-button type="primary" @click="connectLiveRoom" :loading="isConnecting">
-                {{ isConnected ? '重新连接' : '连接' }}
+              <el-button 
+                :type="isConnected ? 'danger' : 'primary'" 
+                @click="isConnected ? disconnectLiveRoom() : connectLiveRoom()" 
+                :loading="isConnecting">
+                {{ isConnected ? '断开连接' : '连接' }}
               </el-button>
             </div>
             <div class="stats-container">
               <div class="live-info">
                 <div class="info-item">
                   <span class="label">直播间名称:</span>
-                  <span class="value">{{ roomName || '东方甄选' }}</span>
+                  <span class="value">{{ roomName || '请输入直播间ID连接' }}</span>
                 </div>
               </div>
               <div class="live-stats">
                 <div class="stats-row">
                   <div class="stat-item">
                     <span class="label">在线观众:</span>
-                    <span class="value">{{ viewerCount || 1258 }}</span>
+                    <span class="value">{{ viewerCount || 0 }}</span>
                   </div>
                   <div class="stat-item">
                     <span class="label">累计观看:</span>
-                    <span class="value">{{ totalViewCount || 5647 }}</span>
+                    <span class="value">{{ totalViewCount || 0 }}</span>
                   </div>
                   <div class="stat-item">
                     <span class="label">点赞数:</span>
-                    <span class="value">{{ likeCount || 3245 }}</span>
+                    <span class="value">{{ likeCount || 0 }}</span>
                   </div>
                 </div>
               </div>
@@ -62,8 +65,10 @@
             <div class="chat-messages">
               <el-scrollbar ref="messagesScrollbar">
                 <div class="message-list">
-                  <!-- 消息示例 -->
-                  <div v-for="(message, index) in sampleMessages" :key="index" 
+                  <div v-if="liveMessages.length === 0 && !isConnected" class="empty-message">
+                    请连接直播间开始接收消息
+                  </div>
+                  <div v-for="(message, index) in liveMessages" :key="index" 
                        class="message-item"
                        :class="[message.type, message.isKeyword ? 'keyword-match' : '']">
                     <template v-if="message.type === 'chat'">
@@ -208,43 +213,24 @@
 import { ref, computed, nextTick, watch, onUnmounted } from 'vue';
 import { ElCard, ElInput, ElButton, ElTag, ElSwitch, ElScrollbar, ElMessage, ElSelect, ElOption } from 'element-plus';
 import { chatService } from '@/services';
+import { DouyinLiveFetcher } from '@/services/douyinLiveFetcher.js';
 
 // 直播间连接状态
 const roomId = ref('');
 const roomName = ref('');
-const liveStatus = ref('已连接');
+const liveStatus = ref('未连接');
 const viewerCount = ref(0);
 const totalViewCount = ref(0);
 const likeCount = ref(0);
 const isConnecting = ref(false);
 const isConnected = ref(false);
 
+// 抖音直播抓取器
+let liveFetcher = null;
+
 // 聊天消息
 const messagesScrollbar = ref(null);
-
-// 示例消息
-const sampleMessages = [
-  { type: 'chat', userName: '用户8264', content: '这个护肤品适合敏感肌肤吗？', isKeyword: true },
-  { type: 'enter', userName: '美丽达人' },
-  { type: 'chat', userName: '时尚先锋', content: '主播用的什么香水啊，闻起来好香' },
-  { type: 'gift', userName: '忠实粉丝', giftName: '爱心', giftCount: 5 },
-  { type: 'chat', userName: '护肤达人', content: '这个面霜保湿效果怎么样？', isKeyword: true },
-  { type: 'follow', userName: '新粉丝001' },
-  { type: 'chat', userName: '购物狂', content: '有没有活动价格？想入手' },
-  { type: 'like', userName: '静静观看', count: 10 },
-  { type: 'chat', userName: '好奇宝宝', content: '这个产品成分是什么？适合油性皮肤吗？', isKeyword: true },
-  { type: 'chat', userName: '理性消费', content: '可以详细介绍下这款护肤品的效果吗？' },
-  { type: 'chat', userName: '用户8265', content: '这个护肤品适合敏感肌肤吗？' },
-  { type: 'enter', userName: '美丽达人1' },
-  { type: 'chat', userName: '时尚先锋1', content: '主播用的什么香水啊，闻起来好香' },
-  { type: 'gift', userName: '忠实粉丝1', giftName: '爱心', giftCount: 5 },
-  { type: 'chat', userName: '护肤达人1', content: '这个面霜保湿效果怎么样？' },
-  { type: 'follow', userName: '新粉丝002' },
-  { type: 'chat', userName: '购物狂1', content: '有没有活动价格？想入手' },
-  { type: 'like', userName: '静静观看1', count: 10 },
-  { type: 'chat', userName: '好奇宝宝1', content: '这个产品成分是什么？适合油性皮肤吗？' },
-  { type: 'chat', userName: '理性消费1', content: '可以详细介绍下这款护肤品的效果吗？' },
-];
+const liveMessages = ref([]);
 
 // AI闲聊
 const chatMode = ref(false);
@@ -310,9 +296,15 @@ const restartChatWithNewConfig = async () => {
   }
 };
 
-// 组件卸载时停止聊天
+// 组件卸载时停止聊天和直播抓取
 onUnmounted(() => {
   stopAIChat();
+  
+  // 停止直播抓取
+  if (liveFetcher) {
+    liveFetcher.stop();
+    liveFetcher = null;
+  }
 });
 
 // 提词生成
@@ -391,26 +383,148 @@ const getMessageTypeName = (type) => {
 };
 
 // 连接直播间
-const connectLiveRoom = () => {
+const connectLiveRoom = async () => {
   if (!roomId.value) {
     ElMessage.warning('请输入直播间ID');
     return;
   }
   
-  isConnecting.value = true;
+  // 如果已连接，不执行连接操作
+  if (isConnected.value) {
+    return;
+  }
   
-  // 模拟连接过程
-  setTimeout(() => {
-    isConnecting.value = false;
-    isConnected.value = true;
-    liveStatus.value = '正在直播';
-    roomName.value = '抖音带货直播示例';
-    viewerCount.value = 1258;
-    totalViewCount.value = 5647;
-    likeCount.value = 3245;
+  isConnecting.value = true;
+  liveStatus.value = '连接中...';
+  
+  try {
+    // 创建抖音直播抓取器实例
+    liveFetcher = new DouyinLiveFetcher(roomId.value);
     
-    ElMessage.success('成功连接到直播间');
-  }, 1500);
+    // 添加事件监听器
+    liveFetcher.on('chat', (data) => {
+      const message = {
+        type: 'chat',
+        userName: data.user,
+        content: data.content,
+        timestamp: data.timestamp
+      };
+      liveMessages.value.push(message);
+      scrollToBottom();
+    });
+    
+    liveFetcher.on('gift', (data) => {
+      const message = {
+        type: 'gift',
+        userName: data.user,
+        giftName: data.giftName,
+        giftCount: data.giftCount,
+        timestamp: data.timestamp
+      };
+      liveMessages.value.push(message);
+      scrollToBottom();
+    });
+    
+    liveFetcher.on('like', (data) => {
+      const message = {
+        type: 'like',
+        userName: data.user,
+        count: data.count,
+        timestamp: data.timestamp
+      };
+      liveMessages.value.push(message);
+      scrollToBottom();
+    });
+    
+    liveFetcher.on('member', (data) => {
+      const message = {
+        type: 'enter',
+        userName: data.user,
+        timestamp: data.timestamp
+      };
+      liveMessages.value.push(message);
+      scrollToBottom();
+    });
+    
+    liveFetcher.on('social', (data) => {
+      const message = {
+        type: 'follow',
+        userName: data.user,
+        timestamp: data.timestamp
+      };
+      liveMessages.value.push(message);
+      scrollToBottom();
+    });
+    
+    liveFetcher.on('stats', (data) => {
+      console.log('直播间统计:', data);
+      // 可以根据需要更新统计数据
+    });
+    
+    liveFetcher.on('roomEnd', () => {
+      liveStatus.value = '直播已结束';
+      isConnected.value = false;
+      ElMessage.info('直播间已结束');
+    });
+    
+    liveFetcher.on('close', () => {
+      liveStatus.value = '连接断开';
+      isConnected.value = false;
+    });
+    
+    // 首先检查房间状态
+    const roomStatus = await liveFetcher.getRoomStatus();
+    if (roomStatus) {
+      roomName.value = roomStatus.nickname || '未知主播';
+      
+      if (roomStatus.isLive) {
+        // 开始连接
+        await liveFetcher.start();
+        
+        isConnecting.value = false;
+        isConnected.value = true;
+        liveStatus.value = '已连接';
+        
+        // 清空之前的消息
+        liveMessages.value = [];
+        
+        ElMessage.success(`成功连接到【${roomName.value}】的直播间`);
+      } else {
+        isConnecting.value = false;
+        liveStatus.value = '直播已结束';
+        ElMessage.warning('该直播间当前未在直播');
+      }
+    } else {
+      isConnecting.value = false;
+      liveStatus.value = '连接失败';
+      ElMessage.error('无法获取直播间信息，请检查房间ID是否正确');
+    }
+    
+  } catch (error) {
+    console.error('连接直播间失败:', error);
+    isConnecting.value = false;
+    liveStatus.value = '连接失败';
+    ElMessage.error(`连接失败: ${error.message || '未知错误'}`);
+  }
+};
+
+// 断开直播间连接
+const disconnectLiveRoom = () => {
+  if (liveFetcher) {
+    liveFetcher.stop();
+    liveFetcher = null;
+  }
+  
+  // 重置状态
+  isConnected.value = false;
+  liveStatus.value = '未连接';
+  roomName.value = '';
+  viewerCount.value = 0;
+  totalViewCount.value = 0;
+  likeCount.value = 0;
+  liveMessages.value = [];
+  
+  ElMessage.success('已断开直播间连接');
 };
 
 // 根据类型返回tag类型
