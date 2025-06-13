@@ -69,12 +69,8 @@ export async function generateSignature(wss) {
  */
 export function decompressGzip(data) {
     try {
-        console.log('📦 使用pako进行gzip解压，数据长度:', data.length);
-        
-        // 直接使用pako解压，就像Python的gzip.decompress()
         const decompressed = pako.inflate(data);
         console.log('✅ gzip解压成功，原始大小:', data.length, '解压后大小:', decompressed.length);
-        
         return decompressed;
     } catch (error) {
         console.error('✗ gzip解压失败:', error);

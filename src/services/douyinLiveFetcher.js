@@ -3,7 +3,7 @@ import WebSocket from '@tauri-apps/plugin-websocket';
 import { resolveResource } from '@tauri-apps/api/path';
 import { readTextFile } from '@tauri-apps/plugin-fs';
 import protobuf from 'protobufjs';
-import { generateMsToken, generateSignature, delay, decompressGzip } from './utils.js';
+import { generateMsToken, generateSignature, decompressGzip } from './utils.js';
 
 /**
  * 抖音直播间数据抓取器
