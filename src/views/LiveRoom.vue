@@ -542,14 +542,13 @@ const getTagType = (type) => {
 
 <style scoped>
 .page-container {
-  height: 1080px;
   padding: 20px 0;
   box-sizing: border-box;
 }
 
 .content-wrapper {
   width: 1300px;
-  height: 1000px;
+  height: 950px;
   margin: 0 auto;
   display: flex;
   gap: 20px;
@@ -561,7 +560,7 @@ const getTagType = (type) => {
   flex-direction: column;
   gap: 20px;
   width: 50%;
-  height: 100%; /* 确保两列高度一致 */
+  height: 100%;
 }
 
 .right-column {

@@ -51,7 +51,7 @@
             </div>
           </template>
           <div class="card-content">
-            <el-scrollbar height="320px">
+            <el-scrollbar height="350px">
               <div>
                 <div v-for="(topic, index) in customTopics" :key="index" class="topic-item">
                   <div class="topic-content">
@@ -111,7 +111,7 @@
             </div>
           </template>
           <div class="card-content">
-            <el-scrollbar height="320px">
+            <el-scrollbar height="350px">
               <div>
                 <div v-for="(topic, index) in forbiddenTopics" :key="index" class="topic-item">
                   <div class="topic-content">
@@ -499,7 +499,7 @@ const generateHotTopics = async () => {
 
 .content-wrapper {
   width: 1300px;
-  height: 900px;
+  height: 950px;
   margin: 0 auto;
   display: flex;
   overflow: hidden;
