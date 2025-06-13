@@ -32,12 +32,10 @@ class LifecycleManager:
         """初始化数据库连接"""
         path: Path = Manager.path(handle).app_local_data_dir()
         await Tortoise.init(
-            db_url=f"sqlite:///{path}/grove.db",
+            db_url=f"sqlite:///{path}/telepromoter.db",
             modules={"models": [
-                "tauri_app.entities.provider",
-                "tauri_app.entities.model",
-                "tauri_app.entities.conversation",
-                "tauri_app.entities.message",
+                "tauri_app.entities.block",
+                "tauri_app.entities.topic",
                 "tauri_app.entities.setting"
             ]},
         )

@@ -15,7 +15,7 @@ embed_migrations!("migrations");
 
 /// 初始化数据库，设置 WAL 模式并运行迁移
 fn initialize_database(app_handle: &tauri::AppHandle) -> Result<(), Box<dyn Error>> {
-    let db_path = app_handle.path().app_local_data_dir()?.join("grove.db");
+    let db_path = app_handle.path().app_local_data_dir()?.join("telepromoter.db");
 
     // 确保目录存在
     if let Some(parent) = db_path.parent() {

@@ -4,7 +4,12 @@ from openai import OpenAI
 from typing import Callable
 from ..entities.setting import Setting
 from ..entities.topic import Topic
-from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
+from pydantic import BaseModel
+from openai.types.chat.completion_create_params import ResponseFormatJSONSchema
+from openai.types.shared_params.response_format_json_schema import JSONSchema
+
+class TopicResponse(BaseModel):
+    topics: list[str]
 
 async def chatTest(apiKey: str) -> tuple[bool, str]:
     """
@@ -53,8 +58,8 @@ async def generateHotTopicByAI() -> list[str]:
     """
     topic_list = await Topic.all()
     my_topic_list = "\n".join([f"{topic.name}" for topic in topic_list])
-    prompt = """
-我现在正在抖音直播间里直播,你帮我生成20条适合在直播间里讨论的话题,目前已有的话题列表如下:
+    prompt = f"""
+我现在正在抖音直播间里直播,你帮我生成10条适合在直播间里讨论的话题,目前已有的话题列表如下:
 -------
 {my_topic_list}
 -------
@@ -69,8 +74,22 @@ async def generateHotTopicByAI() -> list[str]:
         model="MiniMax-Text-01",
         messages=[{"role": "user", "content": prompt}],
         stream=False,
-        response_format=ChatCompletionMessageParam(type="json_object", json_schema={"type": "array", "items": {"type": "string"}})
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "result",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "topic_list": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        }
+                    }
+                }
+            }
+        }
     )
     result = response.choices[0].message.content
-    return json.loads(result)
+    return json.loads(result)["result"]["topic_list"]
 
