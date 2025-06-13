@@ -3,7 +3,7 @@ import WebSocket from '@tauri-apps/plugin-websocket';
 import { resolveResource } from '@tauri-apps/api/path';
 import { readTextFile } from '@tauri-apps/plugin-fs';
 import protobuf from 'protobufjs';
-import { generateMsToken, generateSignature, delay } from './utils.js';
+import { generateMsToken, generateSignature, delay, decompressGzip } from './utils.js';
 
 /**
  * 抖音直播间数据抓取器
@@ -182,11 +182,21 @@ export class DouyinLiveFetcher {
      * 停止连接
      */
     stop() {
+        // 清除心跳定时器
+        if (this.heartbeatTimer) {
+            clearInterval(this.heartbeatTimer);
+            this.heartbeatTimer = null;
+            console.log('🛑 心跳定时器已停止');
+        }
+        
+        // 断开WebSocket连接
         if (this.ws) {
             this.ws.disconnect();
             this.ws = null;
-            console.log('✓ WebSocket连接已断开');
+            console.log('🛑 WebSocket连接已断开');
         }
+        
+        console.log('✅ 抖音直播抓取已完全停止');
     }
 
     /**
@@ -196,18 +206,40 @@ export class DouyinLiveFetcher {
         const roomId = await this.getRoomId();
         const ttwid = await this.getTtwid();
         
-        let wss = `wss://webcast5-ws-web-hl.douyin.com/webcast/im/push/v2/?app_name=douyin_web&version_code=180800&webcast_sdk_version=1.0.14-beta.0&update_version_code=1.0.14-beta.0&compress=gzip&device_platform=web&cookie_enabled=true&screen_width=1536&screen_height=864&browser_language=zh-CN&browser_platform=Win32&browser_name=Mozilla&browser_version=5.0%20(Windows%20NT%2010.0;%20Win64;%20x64)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/126.0.0.0%20Safari/537.36&browser_online=true&tz_name=Asia/Shanghai&cursor=d-1_u-1_fh-7392091211001140287_t-1721106114633_r-1&internal_ext=internal_src:dim|wss_push_room_id:${roomId}|wss_push_did:7319483754668557238|first_req_ms:1721106114541|fetch_time:1721106114633|seq:1|wss_info:0-1721106114633-0-0|wrds_v:7392094459690748497&host=https://live.douyin.com&aid=6383&live_id=1&did_rule=3&endpoint=live_pc&support_wrds=1&user_unique_id=7319483754668557238&im_path=/webcast/im/fetch/&identity=audience&need_persist_msg_count=15&insert_task_id=&live_reason=&room_id=${roomId}&heartbeatDuration=0`;
+        // 按照Python版本构建完整的WebSocket URL
+        const timestamp = Date.now();
+        const userUniqueId = '7319483754668557238'; // 使用固定的用户ID，与Python版本一致
         
-        // 生成签名
-        const signature = await generateSignature(wss);
-        wss += `&signature=${signature}`;
+        // 构建完整的WebSocket URL，参考Python版本
+        let wssUrl = `wss://webcast5-ws-web-hl.douyin.com/webcast/im/push/v2/?app_name=douyin_web&version_code=180800&webcast_sdk_version=1.0.14-beta.0&update_version_code=1.0.14-beta.0&compress=gzip&device_platform=web&cookie_enabled=true&screen_width=1536&screen_height=864&browser_language=zh-CN&browser_platform=Win32&browser_name=Mozilla&browser_version=5.0%20(Windows%20NT%2010.0;%20Win64;%20x64)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/126.0.0.0%20Safari/537.36&browser_online=true&tz_name=Asia/Shanghai&cursor=d-1_u-1_fh-7392091211001140287_t-1721106114633_r-1&internal_ext=internal_src:dim|wss_push_room_id:${roomId}|wss_push_did:${userUniqueId}|first_req_ms:1721106114541|fetch_time:1721106114633|seq:1|wss_info:0-1721106114633-0-0|wrds_v:7392094459690748497&host=https://live.douyin.com&aid=6383&live_id=1&did_rule=3&endpoint=live_pc&support_wrds=1&user_unique_id=${userUniqueId}&im_path=/webcast/im/fetch/&identity=audience&need_persist_msg_count=15&insert_task_id=&live_reason=&room_id=${roomId}&heartbeatDuration=0`;
+        
+        // 生成签名并添加到URL
+        try {
+            const signature = await generateSignature(wssUrl);
+            if (signature) {
+                wssUrl += `&signature=${encodeURIComponent(signature)}`;
+            }
+        } catch (error) {
+            console.warn('⚠️ 签名生成失败，尝试无签名连接:', error);
+        }
         
         try {
             console.log('✓ 正在连接WebSocket...');
-            this.ws = await WebSocket.connect(wss);
+            console.log('WebSocket URL:', wssUrl.substring(0, 100) + '...');
             
-            // 设置事件监听器
-            this.ws.addListener(this._onMessage.bind(this));
+            // 使用Tauri v2的WebSocket API连接，添加cookie
+            this.ws = await WebSocket.connect(wssUrl, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Origin': 'https://live.douyin.com',
+                    'Cookie': `ttwid=${ttwid}`
+                }
+            });
+            
+            // 设置消息监听器
+            this.ws.addListener((message) => {
+                this._onMessage(message);
+            });
             
             console.log('✓ WebSocket连接成功');
             
@@ -224,7 +256,12 @@ export class DouyinLiveFetcher {
      * 开始心跳
      */
     _startHeartbeat() {
-        setInterval(async () => {
+        // 清除之前的定时器
+        if (this.heartbeatTimer) {
+            clearInterval(this.heartbeatTimer);
+        }
+        
+        this.heartbeatTimer = setInterval(async () => {
             if (this.ws) {
                 try {
                     const PushFrame = this.root.lookupType('douyin.PushFrame');
@@ -232,12 +269,14 @@ export class DouyinLiveFetcher {
                     const buffer = PushFrame.encode(heartbeat).finish();
                     
                     await this.ws.send(Array.from(buffer));
-                    console.log('✓ 发送心跳包');
+                    console.log('💓 发送心跳包');
                 } catch (error) {
                     console.error('✗ 心跳包发送失败:', error);
                 }
             }
         }, 5000);
+        
+        console.log('💓 心跳定时器已启动');
     }
 
     /**
@@ -245,38 +284,79 @@ export class DouyinLiveFetcher {
      */
     async _onMessage(message) {
         try {
-            // 解析PushFrame
+            console.log('📥 收到WebSocket消息:', message.type);
+            
+            // 处理不同类型的消息
+            if (message.type === 'Close') {
+                console.log('🔌 WebSocket连接关闭:', message.data);
+                this._onClose();
+                return;
+            }
+            
+            if (message.type === 'Text') {
+                console.log('📄 收到文本消息:', message.data);
+                return;
+            }
+            
+            if (message.type !== 'Binary') {
+                console.log('❓ 未知消息类型:', message.type);
+                return;
+            }
+            
+            // 解析Binary消息
             const PushFrame = this.root.lookupType('douyin.PushFrame');
             const Response = this.root.lookupType('douyin.Response');
             
-            // message.data是Uint8Array
-            const frame = PushFrame.decode(new Uint8Array(message.data));
+            // message.data是number[]格式，转换为Uint8Array
+            let data;
+            if (Array.isArray(message.data)) {
+                data = new Uint8Array(message.data);
+            } else {
+                console.warn('❌ Binary消息格式错误:', typeof message.data);
+                return;
+            }
+            
+            const frame = PushFrame.decode(data);
+            console.log('🔧 解析PushFrame成功, payloadType:', frame.payloadType);
             
             if (frame.payload) {
-                // 解压gzip数据
-                let payload = frame.payload;
-                
-                // 如果是gzip压缩的数据，需要先解压
-                // 这里简化处理，实际可能需要检查compression标志
                 try {
-                    const response = Response.decode(payload);
+                    // 完全按照Python版本：response = Response().parse(gzip.decompress(package.payload))
+                    console.log('📦 开始解压PushFrame payload...');
+                    const decompressedPayload = decompressGzip(frame.payload);
                     
-                    // 发送ack确认
+                    console.log('🔧 开始解析Response...');
+                    const response = Response.decode(decompressedPayload);
+                    console.log('✅ 解析Response成功, messagesCount:', response.messagesList?.length || 0);
+                    
+                    // 发送ack确认 - 按照Python版本逻辑
                     if (response.needAck) {
                         const ack = PushFrame.create({
                             logId: frame.logId,
                             payloadType: 'ack',
-                            payload: Buffer.from(response.internalExt || '', 'utf-8')
+                            payload: new TextEncoder().encode(response.internalExt || '')
                         });
                         const ackBuffer = PushFrame.encode(ack).finish();
                         await this.ws.send(Array.from(ackBuffer));
+                        console.log('✅ 发送ACK确认');
                     }
                     
-                    // 处理消息列表
+                    // 处理消息列表 - 按照Python版本逻辑
                     if (response.messagesList && response.messagesList.length > 0) {
+                        console.log('🚀 开始处理消息列表...');
                         for (const msg of response.messagesList) {
-                            await this._handleMessage(msg);
+                            const method = msg.method;
+                            const handler = this.messageHandlers[method];
+                            
+                            if (handler && msg.payload) {
+                                try {
+                                    handler(msg.payload);
+                                } catch (handlerError) {
+                                    console.error(`✗ 处理消息失败 [${method}]:`, handlerError);
+                                }
+                            }
                         }
+                        console.log('✅ 消息列表处理完成');
                     }
                 } catch (decodeError) {
                     console.error('✗ 解析Response失败:', decodeError);
@@ -288,19 +368,19 @@ export class DouyinLiveFetcher {
     }
 
     /**
-     * 处理单个消息
+     * 处理WebSocket连接关闭
      */
-    async _handleMessage(message) {
-        try {
-            const method = message.method;
-            const handler = this.messageHandlers[method];
-            
-            if (handler && message.payload) {
-                await handler(message.payload);
-            }
-        } catch (error) {
-            console.error(`✗ 处理消息失败 [${message.method}]:`, error);
+    _onClose() {
+        console.log('🔌 WebSocket连接已关闭');
+        
+        if (this.heartbeatTimer) {
+            clearInterval(this.heartbeatTimer);
+            this.heartbeatTimer = null;
         }
+        
+        this._emit('close', {
+            timestamp: Date.now()
+        });
     }
 
     /**

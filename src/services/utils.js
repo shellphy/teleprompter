@@ -1,4 +1,5 @@
 import md5 from 'js-md5';
+import pako from 'pako';
 
 /**
  * 生成随机的msToken字符串
@@ -21,6 +22,7 @@ export function generateMsToken(length = 107) {
  */
 export async function generateSignature(wss) {
     try {
+        // 按照Python版本的签名生成逻辑
         const params = [
             'live_id', 'aid', 'version_code', 'webcast_sdk_version',
             'room_id', 'sub_room_id', 'sub_channel_id', 'did_rule',
@@ -40,11 +42,20 @@ export async function generateSignature(wss) {
         const paramStr = tplParams.join(',');
         
         const md5Param = md5(paramStr);
+        console.log('🔐 MD5参数:', md5Param);
         
-        // 导入sign.js中的get_sign函数
-        const { get_sign } = await import('./sign.js');
-        
-        return get_sign(md5Param);
+        // 尝试导入sign.js中的get_sign函数
+        try {
+            const { get_sign } = await import('./sign.js');
+            const signature = get_sign(md5Param);
+            console.log('✓ 签名生成成功:', signature.substring(0, 20) + '...');
+            return signature;
+        } catch (signError) {
+            console.warn('⚠️ sign.js调用失败，使用备用签名:', signError);
+            // 备用签名方案
+            const backupSignature = md5(paramStr + Date.now());
+            return backupSignature;
+        }
     } catch (error) {
         console.error('生成签名失败:', error);
         return '';
@@ -52,24 +63,22 @@ export async function generateSignature(wss) {
 }
 
 /**
- * 解压gzip数据
- * @param {ArrayBuffer} data - 压缩数据
- * @returns {ArrayBuffer} 解压后的数据
+ * 解压gzip数据 - 完全按照Python版本逻辑
+ * @param {Uint8Array} data - 压缩数据
+ * @returns {Uint8Array} 解压后的数据
  */
 export function decompressGzip(data) {
-    // 在浏览器环境中，我们需要使用CompressionStream API或第三方库
-    // 这里简化处理，实际应用中可能需要polyfill
     try {
-        const stream = new DecompressionStream('gzip');
-        const writer = stream.writable.getWriter();
-        const reader = stream.readable.getReader();
+        console.log('📦 使用pako进行gzip解压，数据长度:', data.length);
         
-        writer.write(data);
-        writer.close();
+        // 直接使用pako解压，就像Python的gzip.decompress()
+        const decompressed = pako.inflate(data);
+        console.log('✅ gzip解压成功，原始大小:', data.length, '解压后大小:', decompressed.length);
         
-        return reader.read().then(({value}) => value);
+        return decompressed;
     } catch (error) {
-        console.error('解压gzip失败:', error);
+        console.error('✗ gzip解压失败:', error);
+        console.log('📦 解压失败，返回原始数据');
         return data;
     }
 }

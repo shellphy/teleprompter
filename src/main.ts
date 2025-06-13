@@ -16,27 +16,27 @@ app.mount("#app");
 
 
 // http请求示范
-try {
-  const response = await fetch('https://live.douyin.com/', {
-    method: 'GET',
-    timeout: 30
-  })
-  console.log(response)
-} catch (error) {
-  console.log(error)
-}
+// try {
+//   const response = await fetch('https://live.douyin.com/', {
+//     method: 'GET',
+//     timeout: 30
+//   })
+//   console.log(response)
+// } catch (error) {
+//   console.log(error)
+// }
 
-// websocket请求示范
-try {
-  const ws = await WebSocket.connect('ws://127.0.0.1:8080');
-  ws.addListener((msg) => {
-    console.log('Received Message:', msg);
-  });
-  await ws.send('Hello World!');
-  await ws.disconnect();
-} catch (error) {
-  console.log(error)
-}
+// // websocket请求示范
+// try {
+//   const ws = await WebSocket.connect('ws://127.0.0.1:8080');
+//   ws.addListener((msg) => {
+//     console.log('Received Message:', msg);
+//   });
+//   await ws.send('Hello World!');
+//   await ws.disconnect();
+// } catch (error) {
+//   console.log(error)
+// }
 
 
 // 读取抖音proto文件
@@ -56,7 +56,7 @@ async function testDouyinLive() {
     
     // 创建抓取器实例，使用一个示例直播间ID
     // 注意：这里需要替换为实际的直播间ID
-    const liveId = '261378947940'; // 示例ID，实际使用时需要替换
+    const liveId = '141559866040'; // 示例ID，实际使用时需要替换
     const fetcher = new DouyinLiveFetcher(liveId);
     
     console.log('✓ 开始测试抖音直播间数据抓取...');
@@ -81,6 +81,10 @@ async function testDouyinLive() {
     fetcher.on('social', (data) => {
       console.log('❤️ 关注消息:', data);
     });
+
+    fetcher.on('close', (data) => {
+      console.log('🔌 WebSocket连接关闭:', data);
+    });
     
     fetcher.on('stats', (data) => {
       console.log('📊 统计消息:', data);
@@ -100,11 +104,11 @@ async function testDouyinLive() {
         // 启动抓取
         await fetcher.start();
         
-        // 运行30秒后停止测试
+        // 运行10秒后停止测试
         setTimeout(() => {
           console.log('⏰ 测试时间结束，停止连接...');
           fetcher.stop();
-        }, 30000);
+        }, 10000);
       } else {
         console.log('⚠️ 直播间已结束，无法进行测试');
       }

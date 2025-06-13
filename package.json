@@ -18,6 +18,7 @@
     "@tauri-apps/plugin-websocket": "~2",
     "element-plus": "^2.10.1",
     "js-md5": "^0.8.3",
+    "pako": "^2.1.0",
     "protobufjs": "^7.5.3",
     "tauri-plugin-pytauri-api": "^0.6.0",
     "vue": "^3.5.13",

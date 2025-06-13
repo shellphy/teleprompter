@@ -1,8 +1,16 @@
-document = {}
-window = {}
-navigator = {'userAgent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
-
+// 创建一个更兼容的环境
 var crawler;
+
+// 如果window不存在，创建一个最小环境
+if (typeof window === 'undefined') {
+    globalThis.window = {};
+}
+if (typeof document === 'undefined') {
+    globalThis.document = {};
+}
+if (typeof navigator === 'undefined') {
+    globalThis.navigator = {'userAgent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'};
+}
 
 
 /** 1.0.0.53 */
