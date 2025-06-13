@@ -101,7 +101,6 @@
           </div>
         </el-card>
 
-         禁止话题区域
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
