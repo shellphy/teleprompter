@@ -70,7 +70,7 @@
                       <span class="user-name">{{ message.userName }}:</span>
                       <span class="message-content">{{ message.content }}</span>
                       <div class="message-actions">
-                        <el-button size="mini" type="primary"
+                        <el-button type="primary"
                                    @click="generateTeleprompter(message)" title="提词">提词</el-button>
                       </div>
                     </template>
