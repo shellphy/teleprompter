@@ -1,8 +1,10 @@
+import json
 from pytauri.ipc import InvokeException
 from openai import OpenAI
 from typing import Callable
 from ..entities.setting import Setting
-
+from ..entities.topic import Topic
+from openai.types.chat.chat_completion_message_param import ResponseFormat
 
 async def chatTest(apiKey: str) -> tuple[bool, str]:
     """
@@ -44,4 +46,31 @@ async def getResponse(prompt: str, maxTokens: int, onMessage) -> None:
     )
     for chunk in response:
         onMessage(chunk.choices[0].delta.content)
+        
+async def generateHotTopicByAI() -> list[str]:
+    """
+    通过AI生成热门话题
+    """
+    topic_list = await Topic.all()
+    my_topic_list = "\n".join([f"{topic.name}" for topic in topic_list])
+    prompt = """
+我现在正在抖音直播间里直播,你帮我生成20条适合在直播间里讨论的话题,目前已有的话题列表如下:
+-------
+{my_topic_list}
+-------
+你生成的话题不能与上述话题重复。
+"""
+
+    setting = await Setting.filter(category="miniMax", name="apiKey").first()
+    if setting is None:
+        raise InvokeException("API Key 未设置")
+    client = OpenAI(api_key=setting.payload, base_url="https://api.minimaxi.com/v1")
+    response = client.chat.completions.create(
+        model="MiniMax-Text-01",
+        messages=[{"role": "user", "content": prompt}],
+        stream=False,
+        response_format=ResponseFormat(type="json_object", json_schema={"type": "array", "items": {"type": "string"}})
+    )
+    result = response.choices[0].message.content
+    return json.loads(result)
 
