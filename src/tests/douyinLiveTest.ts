@@ -1,10 +1,7 @@
 async function testDouyinLive() {
   try {
-    // 动态导入模块
     const { DouyinLiveFetcher } = await import('../services/douyinLiveFetcher.js');
     
-    // 创建抓取器实例，使用一个示例直播间ID
-    // 注意：这里需要替换为实际的直播间ID
     const liveId = '489788578491';
     const fetcher = new DouyinLiveFetcher(liveId);
     
