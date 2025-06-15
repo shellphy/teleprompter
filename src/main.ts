@@ -10,6 +10,5 @@ app.use(router);
 app.use(ElementPlus);
 app.mount("#app");
 
-import {runDouyinTests} from "@/tests/douyinLiveTest.ts";
-
-runDouyinTests()
+// import {runDouyinTests} from "@/tests/douyinLiveTest.ts";
+// runDouyinTests()

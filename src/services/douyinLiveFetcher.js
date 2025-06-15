@@ -461,6 +461,7 @@ export class DouyinLiveFetcher {
         try {
             const MemberMessage = this.root.lookupType('douyin.MemberMessage');
             const message = MemberMessage.decode(payload);
+            console.log('进入直播间消息:', message);
             const userName = message.user?.nickName || '未知用户';
             const userId = message.user?.id || '';
             const gender = message.user?.gender === 1 ? '男' : '女';

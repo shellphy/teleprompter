@@ -44,10 +44,6 @@
                     <span class="label">累计观看:</span>
                     <span class="value">{{ totalViewCount || 0 }}</span>
                   </div>
-                  <div class="stat-item">
-                    <span class="label">点赞数:</span>
-                    <span class="value">{{ likeCount || 0 }}</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -405,7 +401,7 @@ const connectLiveRoom = async () => {
     liveFetcher.on('chat', (data) => {
       const message = {
         type: 'chat',
-        userName: data.user,
+        userName: data.userName,
         content: data.content,
         timestamp: data.timestamp
       };
@@ -425,40 +421,41 @@ const connectLiveRoom = async () => {
       scrollToBottom();
     });
     
-    liveFetcher.on('like', (data) => {
-      const message = {
-        type: 'like',
-        userName: data.user,
-        count: data.count,
-        timestamp: data.timestamp
-      };
-      liveMessages.value.push(message);
-      scrollToBottom();
-    });
+    // liveFetcher.on('like', (data) => {
+    //   const message = {
+    //     type: 'like',
+    //     userName: data.userName,
+    //     count: data.count,
+    //     timestamp: data.timestamp
+    //   };
+    //   liveMessages.value.push(message);
+    //   scrollToBottom();
+    // });
     
     liveFetcher.on('member', (data) => {
       const message = {
         type: 'enter',
-        userName: data.user,
+        userName: data.userName,
         timestamp: data.timestamp
       };
+      console.log('进入直播间:', data);
       liveMessages.value.push(message);
       scrollToBottom();
     });
     
-    liveFetcher.on('social', (data) => {
-      const message = {
-        type: 'follow',
-        userName: data.user,
-        timestamp: data.timestamp
-      };
-      liveMessages.value.push(message);
-      scrollToBottom();
-    });
+    // liveFetcher.on('social', (data) => {
+    //   const message = {
+    //     type: 'follow',
+    //     userName: data.userName,
+    //     timestamp: data.timestamp
+    //   };
+    //   liveMessages.value.push(message);
+    //   scrollToBottom();
+    // });
     
     liveFetcher.on('stats', (data) => {
-      console.log('直播间统计:', data);
-      // 可以根据需要更新统计数据
+      viewerCount.value = data.current;
+      totalViewCount.value = data.totalPv;
     });
     
     liveFetcher.on('roomEnd', () => {

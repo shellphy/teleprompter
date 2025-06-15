@@ -49,7 +49,6 @@ def register_chat_commands(commands: Commands) -> None:
 
         channel: Channel[Msg] = body.channel.channel_on(webview_window.as_ref_webview())
         prompt = DEFAULT_PROMPT
-        print(body.type)
         if body.type == ChatType.balanced:
             prompt = DEFAULT_PROMPT
         elif body.type == ChatType.topic:

@@ -20,9 +20,9 @@ async function testDouyinLive() {
     //   console.log('点赞消息:', data);
     // });
     
-    // fetcher.on('member', (data: any) => {
-    //   console.log('进场消息:', data);
-    // });
+    fetcher.on('member', (data: any) => {
+      console.log('进场消息:', data);
+    });
     
     // fetcher.on('social', (data: any) => {
     //   console.log('关注消息:', data);
