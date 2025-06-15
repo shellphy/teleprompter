@@ -2,7 +2,7 @@ async function testDouyinLive() {
   try {
     const { DouyinLiveFetcher } = await import('../services/douyinLiveFetcher.js');
     
-    const liveId = '489788578491';
+    const liveId = '845881684503';
     const fetcher = new DouyinLiveFetcher(liveId);
     
     console.log('开始测试抖音直播间数据抓取...');
@@ -12,21 +12,21 @@ async function testDouyinLive() {
       console.log('聊天消息:', data);
     });
     
-    fetcher.on('gift', (data: any) => {
-      console.log('礼物消息:', data);
-    });
+    // fetcher.on('gift', (data: any) => {
+    //   console.log('礼物消息:', data);
+    // });
     
-    fetcher.on('like', (data: any) => {
-      console.log('点赞消息:', data);
-    });
+    // fetcher.on('like', (data: any) => {
+    //   console.log('点赞消息:', data);
+    // });
     
-    fetcher.on('member', (data: any) => {
-      console.log('进场消息:', data);
-    });
+    // fetcher.on('member', (data: any) => {
+    //   console.log('进场消息:', data);
+    // });
     
-    fetcher.on('social', (data: any) => {
-      console.log('关注消息:', data);
-    });
+    // fetcher.on('social', (data: any) => {
+    //   console.log('关注消息:', data);
+    // });
 
     fetcher.on('close', (data: any) => {
       console.log('WebSocket连接关闭:', data);
@@ -49,7 +49,7 @@ async function testDouyinLive() {
         setTimeout(() => {
           console.log('测试时间结束，停止连接...');
           fetcher.stop();
-        }, 10000);
+        }, 300000);
       } else {
         console.log('直播间已结束，无法进行测试');
       }
