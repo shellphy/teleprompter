@@ -15,7 +15,12 @@
       {
         "title": "teleprompter",
         "width": 1920,
-        "height": 1440
+        "minWidth": 1920,
+        "maxWidth": 1920,
+        "height": 1080,
+        "minHeight": 1080,
+        "maxHeight": 1080,
+        "resizable": false
       }
     ],
     "security": {

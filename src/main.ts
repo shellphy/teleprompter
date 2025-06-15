@@ -9,3 +9,7 @@ const app = createApp(App);
 app.use(router);
 app.use(ElementPlus);
 app.mount("#app");
+
+import {runDouyinTests} from "@/tests/douyinLiveTest.ts";
+
+runDouyinTests()

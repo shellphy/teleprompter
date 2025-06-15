@@ -527,17 +527,6 @@ const disconnectLiveRoom = () => {
   ElMessage.success('已断开直播间连接');
 };
 
-// 根据类型返回tag类型
-const getTagType = (type) => {
-  const typeMap = {
-    '产品信息': 'primary',
-    '活动信息': 'warning',
-    '成分解析': 'info',
-    '使用方法': 'success',
-    '注意事项': 'danger'
-  };
-  return typeMap[type] || 'info';
-};
 </script>
 
 <style scoped>

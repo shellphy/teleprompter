@@ -42,19 +42,18 @@ export async function generateSignature(wss) {
         const paramStr = tplParams.join(',');
         
         const md5Param = md5(paramStr);
-        console.log('🔐 MD5参数:', md5Param);
+        console.log('MD5参数:', md5Param);
         
         // 尝试导入sign.js中的get_sign函数
         try {
             const { get_sign } = await import('./sign.js');
             const signature = get_sign(md5Param);
-            console.log('✓ 签名生成成功:', signature.substring(0, 20) + '...');
+            console.log('签名生成成功:', signature.substring(0, 20) + '...');
             return signature;
         } catch (signError) {
-            console.warn('⚠️ sign.js调用失败，使用备用签名:', signError);
+            console.warn('sign.js调用失败，使用备用签名:', signError);
             // 备用签名方案
-            const backupSignature = md5(paramStr + Date.now());
-            return backupSignature;
+            return md5(paramStr + Date.now());
         }
     } catch (error) {
         console.error('生成签名失败:', error);
@@ -79,37 +78,3 @@ export function decompressGzip(data) {
     }
 }
 
-/**
- * 字节数组转字符串
- * @param {Uint8Array} bytes - 字节数组
- * @returns {string} 字符串
- */
-export function bytesToString(bytes) {
-    return new TextDecoder('utf-8').decode(bytes);
-}
-
-/**
- * 字符串转字节数组
- * @param {string} str - 字符串
- * @returns {Uint8Array} 字节数组
- */
-export function stringToBytes(str) {
-    return new TextEncoder().encode(str);
-}
-
-/**
- * 获取当前时间戳
- * @returns {number} 时间戳
- */
-export function getTimestamp() {
-    return Date.now();
-}
-
-/**
- * 延迟函数
- * @param {number} ms - 延迟毫秒数
- * @returns {Promise} Promise
- */
-export function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-} 
